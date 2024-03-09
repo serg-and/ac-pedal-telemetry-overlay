@@ -6,25 +6,31 @@ from utils import console
 
 class Config:
     """App configuration. Load config upon intialization."""
-    app_height=100  # App height (Specifies the height of the app in pixels); from 10 to 1000
-    app_width=300   # App width in pixels; from 10 to 1000
-    sample_rate=30  # Traces sample rate; from  1 hz to 50 hz
-    time_window=7   # Trace time window; from 1 seconds to 60 seconds
-    trace_size=2.0  # Trace line thickness; from 1 px to 10 px
-    opacity=0.5 # App opacity (between 0.0 and 1.0)
-    show_throttle=True  # Show throttle trace
-    show_brake=True # Show brake trace
-    show_clutch=False   # Show clutch trace
-    throttle_color=(0.16, 1.0, 0.0, 1.0)    # Color of the throttle trace
-    brake_color=(1.0, 0.16, 0.0, 1.0)   # Color of the brake trace
-    clutch_color=(0.16, 1.0, 1.0, 1.0)  # Color of the clutch trace
 
     def __init__(self):
         self.update_cfg = False
         app_dir = os.path.dirname(__file__)
         self.cfg_file_path = os.path.join(app_dir, "config.ini")
         self.cfg_parser = configparser.ConfigParser(inline_comment_prefixes=";")
+        self.set_defaults()
         self.parse_config()
+    
+    def set_defaults(self, save=False):
+        self.app_height=100  # App height (Specifies the height of the app in pixels); from 10 to 1000
+        self.app_width=300   # App width in pixels; from 10 to 1000
+        self.sample_rate=30  # Traces sample rate; from  1 hz to 100 hz
+        # self.time_window=7   # Trace time window; from 1 seconds to 60 seconds
+        self.trace_size=2.0  # Trace line thickness; from 1 px to 10 px
+        self.opacity=0.5 # App opacity (between 0.0 and 1.0)
+        self.show_throttle=True  # Show throttle trace
+        self.show_brake=True # Show brake trace
+        self.show_clutch=False   # Show clutch trace
+        self.throttle_color=(0.16, 1.0, 0.0, 1.0)    # Color of the throttle trace
+        self.brake_color=(1.0, 0.16, 0.0, 1.0)   # Color of the brake trace
+        self.clutch_color=(0.16, 1.0, 1.0, 1.0)  # Color of the clutch trace
+        
+        if save:
+            self.save()
 
     def parse_config(self):
         """Initialize config parser and load config"""
@@ -40,9 +46,9 @@ class Config:
         self.get_int('GENERAL', 'app_height')
         self.get_int('GENERAL', 'app_width')
         self.get_int('GENERAL', 'sample_rate')
-        self.get_int('GENERAL', 'time_window')
+        self.get_int('GENERAL', 'trace_size')
+        # self.get_int('GENERAL', 'time_window')
         self.get_float('GENERAL', 'opacity')
-        self.get_float('GENERAL', 'trace_size')
         self.get_rgba('GENERAL', 'throttle_color')
         self.get_rgba('GENERAL', 'brake_color')
         self.get_rgba('GENERAL', 'clutch_color')
@@ -62,7 +68,7 @@ class Config:
         self.cfg_parser.set('GENERAL', 'app_height', str(self.app_height))
         self.cfg_parser.set('GENERAL', 'app_width', str(self.app_width))
         self.cfg_parser.set('GENERAL', 'sample_rate', str(self.sample_rate))
-        self.cfg_parser.set('GENERAL', 'time_window', str(self.time_window))
+        # self.cfg_parser.set('GENERAL', 'time_window', str(self.time_window))
         self.cfg_parser.set('GENERAL', 'opacity', str(self.opacity))
         self.cfg_parser.set('GENERAL', 'trace_size', str(self.trace_size))
 
