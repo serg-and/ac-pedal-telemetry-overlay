@@ -309,7 +309,7 @@ def on_set_defaults_click(*args):
 
 def on_reset_click(*args):
     global config
-    config.set_defaults(False)
+    config.set_defaults(True)
     on_set_defaults_click()
     set_window_config()
 

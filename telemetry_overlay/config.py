@@ -18,7 +18,7 @@ class Config:
     def set_defaults(self, save=False):
         self.app_height=100  # App height (Specifies the height of the app in pixels); from 10 to 1000
         self.app_width=300   # App width in pixels; from 10 to 1000
-        self.sample_rate=30  # Traces sample rate; from  1 hz to 100 hz
+        self.sample_rate=40  # Traces sample rate; from  1 hz to 100 hz
         # self.time_window=7   # Trace time window; from 1 seconds to 60 seconds
         self.trace_size=2.0  # Trace line thickness; from 1 px to 10 px
         self.opacity=0.5 # App opacity (between 0.0 and 1.0)
