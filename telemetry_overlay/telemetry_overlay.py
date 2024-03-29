@@ -1,4 +1,5 @@
 import ac
+import acsys
 
 from config import Config
 from data import TelemetryData
@@ -11,7 +12,7 @@ IS_CSP = hasattr(ac, 'ext_createRenderTarget')
 config = None
 telemetry = None
 update_ref = {'timer': 0, 'timeout': 0}
-update_low_freq_ref = {'timer': 0, 'timeout': 0.2} # update low priority data every 0.2s
+update_low_freq_ref = {'timer': 0, 'timeout': 0.1} # update low priority data every 0.1s
 settings_open = False
 confirm_active = False
 
@@ -21,6 +22,9 @@ ac_graph_traces = {
     'throttle': None,
     'brake': None,
     'clutch': None,
+    'steering': None,
+    'gx': None,
+    'gz': None,
 }
 
 # main window ui
@@ -32,15 +36,22 @@ settings_window = None
 throttle_checkbox = None
 brake_checkbox = None
 clutch_checkbox = None
+steering_checkbox = None
+gx_checkbox = None
+gz_checkbox = None
 width_spinner = None
 height_spinner = None
 opacity_spinner = None
 trace_size_spinner = None
 # time_window_spinner = None
 sample_rate_spinner = None
+denoise_g_spinner = None
 throttle_color_input = None
 brake_color_input = None
 clutch_color_input = None
+steering_color_input = None
+gx_color_input = None
+gz_color_input = None
 set_defaults_btn = None
 confirm_set_defaults_btn = None
 
@@ -53,7 +64,7 @@ def acMain(ac_version):
         global config, telemetry, app_window, toggle_settings_button
 
         config = Config()
-        telemetry = TelemetryData()
+        telemetry = TelemetryData(config)
 
         app_window = ac.newApp("Telemetry Overlay")
         ac.setTitle(app_window, "")
@@ -78,16 +89,16 @@ def acMain(ac_version):
         set_window_config()
         
         global settings_window
-        global throttle_checkbox, brake_checkbox, clutch_checkbox
-        global width_spinner, height_spinner, opacity_spinner, trace_size_spinner, sample_rate_spinner
-        global throttle_color_input, brake_color_input, clutch_color_input
+        global throttle_checkbox, brake_checkbox, clutch_checkbox, steering_checkbox, gx_checkbox, gz_checkbox
+        global width_spinner, height_spinner, opacity_spinner, trace_size_spinner, sample_rate_spinner, denoise_g_spinner
+        global throttle_color_input, brake_color_input, clutch_color_input, steering_color_input, gx_color_input, gz_color_input
         global set_defaults_btn, confirm_set_defaults_btn
         
         settings_window = ac.newApp("Telemetry Overlay Settings")
         ac.setVisible(settings_window, 0)
         ac.drawBorder(settings_window, 0)
         ac.setIconPosition(settings_window, 0, -10000)
-        ac.setSize(settings_window, 530, 360)
+        ac.setSize(settings_window, 530, 530)
         ac.setBackgroundOpacity(settings_window, 0.7)
         ac.setVisible(settings_window, 0)
         
@@ -115,6 +126,30 @@ def acMain(ac_version):
             y=140,
             onChange=on_show_clutch_change
         )
+        steering_checkbox = Checkbox(
+            window=settings_window,
+            label='Steering trace',
+            value=config.show_steering,
+            x=20,
+            y=180,
+            onChange=on_show_steering_change
+        )
+        gx_checkbox = Checkbox(
+            window=settings_window,
+            label='Lateral G',
+            value=config.show_gx,
+            x=20,
+            y=220,
+            onChange=on_show_gx_change
+        )
+        gz_checkbox = Checkbox(
+            window=settings_window,
+            label='Longitudinal G',
+            value=config.show_gz,
+            x=20,
+            y=260,
+            onChange=on_show_gz_change
+        )
 
         throttle_color_input = RGBAInput(
             window=settings_window,
@@ -138,6 +173,27 @@ def acMain(ac_version):
             value=config.clutch_color,
             onChange=on_clutch_color_change
         )
+        steering_color_input = RGBAInput(
+            window=settings_window,
+            x=160,
+            y=177,
+            value=config.steering_color,
+            onChange=on_steering_color_change
+        )
+        gx_color_input = RGBAInput(
+            window=settings_window,
+            x=160,
+            y=217,
+            value=config.gx_color,
+            onChange=on_gx_color_change
+        )
+        gz_color_input = RGBAInput(
+            window=settings_window,
+            x=160,
+            y=257,
+            value=config.gz_color,
+            onChange=on_gz_color_change
+        )
         
         width_spinner = Spinner(
             window=settings_window,
@@ -149,7 +205,7 @@ def acMain(ac_version):
             max=1000,
             step=1,
             x=20,
-            y=200,
+            y=320,
             width=235,
             onChange=on_width_change
         )
@@ -163,7 +219,7 @@ def acMain(ac_version):
             max=1000,
             step=1,
             x=20,
-            y=260,
+            y=380,
             width=235,
             onChange=on_height_change
         )
@@ -177,7 +233,7 @@ def acMain(ac_version):
             max=100,
             step=1,
             x=20,
-            y=320,
+            y=440,
             width=235,
             onChange=on_opacity_change
         )
@@ -192,7 +248,7 @@ def acMain(ac_version):
             max=100,
             step=1,
             x=275,
-            y=200,
+            y=320,
             width=235,
             onChange=on_sample_rate_change
         )
@@ -209,34 +265,35 @@ def acMain(ac_version):
                 max=10,
                 step=1,
                 x=275,
-                y=260,
+                y=380,
                 width=235,
                 onChange=on_trace_size_change,
             )
-        # time_window_spinner = Spinner(
-        #     window=settings_window,
-        #     label='Time window (sec)',
-        #     label_top=True,
-        #     label_align='center',
-        #     value=config.time_window,
-        #     min=1,
-        #     max=60,
-        #     step=1,
-        #     x=275,
-        #     y=260,
-        #     width=235,
-        #     onChange=on_time_window_change
-        # )
+        
+        denoise_g_spinner = Spinner(
+            window=settings_window,
+            label='Denoise G traces',
+            label_top=True,
+            label_align='center',
+            value=config.denoise_g,
+            min=1,
+            max=50,
+            step=1,
+            x=275,
+            y=440,
+            width=235,
+            onChange=on_denoise_g_change
+        )
             
         set_defaults_btn = ac.addButton(settings_window, "reset settings")
-        ac.setPosition(set_defaults_btn, 275, 320)
+        ac.setPosition(set_defaults_btn, 20, 490)
         ac.setSize(set_defaults_btn, 100, 22)
         ac.addOnClickedListener(set_defaults_btn, on_set_defaults_click)
 
         confirm_set_defaults_btn = ac.addButton(settings_window, "requires restart")
         ac.setVisible(confirm_set_defaults_btn, 0)
         ac.setBackgroundColor(confirm_set_defaults_btn, 1, 0, 0)
-        ac.setPosition(confirm_set_defaults_btn, 385, 320)
+        ac.setPosition(confirm_set_defaults_btn, 130, 490)
         ac.setSize(confirm_set_defaults_btn, 125, 22)
         ac.addOnClickedListener(confirm_set_defaults_btn, on_reset_click)
     except Exception as e:
@@ -254,7 +311,6 @@ def set_window_config():
 
     update_ref['timeout'] = 1 / config.sample_rate
 
-    
     global csp_graph, ac_graph, ac_graph_traces
     if IS_CSP:
         csp_graph.width = config.app_width
@@ -266,6 +322,12 @@ def set_window_config():
         ac_graph.height = config.app_height
         ac_graph.setup()
 
+        if config.show_gz and not ac_graph_traces['gz']:
+            ac_graph_traces['gz'] = ac_graph.add_trace(config.gz_color)
+        if config.show_gx and not ac_graph_traces['gx']:
+            ac_graph_traces['gx'] = ac_graph.add_trace(config.gx_color)
+        if config.show_steering and not ac_graph_traces['steering']:
+            ac_graph_traces['steering'] = ac_graph.add_trace(config.steering_color)
         if config.show_clutch and not ac_graph_traces['clutch']:
             ac_graph_traces['clutch'] = ac_graph.add_trace(config.clutch_color)
         if config.show_throttle and not ac_graph_traces['throttle']:
@@ -350,10 +412,45 @@ def on_show_clutch_change(id, value):
             ac_graph_traces['clutch'] = ac_graph.add_trace(config.clutch_color)
 
 
+def on_show_steering_change(id, value):
+    global config, config, ac_graph, ac_graph_traces
+    config_change('show_steering', not config.show_steering)
+
+    if not IS_CSP:
+        if ac_graph_traces['steering']:
+            ac_graph_traces['steering'].remove()
+            ac_graph_traces['steering'] = None
+        else:
+            ac_graph_traces['steering'] = ac_graph.add_trace(config.steering_color)
+
+
+def on_show_gx_change(id, value):
+    global config, config, ac_graph, ac_graph_traces
+    config_change('show_gx', not config.show_gx)
+
+    if not IS_CSP:
+        if ac_graph_traces['gx']:
+            ac_graph_traces['gx'].remove()
+            ac_graph_traces['gx'] = None
+        else:
+            ac_graph_traces['gx'] = ac_graph.add_trace(config.gx_color)
+
+
+def on_show_gz_change(id, value):
+    global config, config, ac_graph, ac_graph_traces
+    config_change('show_gz', not config.show_gz)
+
+    if not IS_CSP:
+        if ac_graph_traces['gz']:
+            ac_graph_traces['gz'].remove()
+            ac_graph_traces['gz'] = None
+        else:
+            ac_graph_traces['gz'] = ac_graph.add_trace(config.gz_color)
+
+
 def on_throttle_color_change(*args):
     global config, throttle_color_input, ac_graph_traces
     value = throttle_color_input.get_value()
-    # traces['throttle'].color = value
     config_change('throttle_color', value)
     
     if not IS_CSP and ac_graph_traces['throttle']:
@@ -363,7 +460,6 @@ def on_throttle_color_change(*args):
 def on_brake_color_change(*args):
     global config, brake_color_input, ac_graph_traces
     value = brake_color_input.get_value()
-    # traces['brake'].color = value
     config_change('brake_color', value)
     
     if not IS_CSP and ac_graph_traces['brake']:
@@ -373,11 +469,37 @@ def on_brake_color_change(*args):
 def on_clutch_color_change(*args):
     global config, clutch_color_input, ac_graph_traces
     value = clutch_color_input.get_value()
-    # traces['clutch'].color = value
     config_change('clutch_color', value)
     
     if not IS_CSP and ac_graph_traces['clutch']:
         ac_graph_traces['clutch'].update_color(value)
+
+
+def on_steering_color_change(*args):
+    global config, steering_color_input, ac_graph_traces
+    value = steering_color_input.get_value()
+    config_change('steering_color', value)
+    
+    if not IS_CSP and ac_graph_traces['steering']:
+        ac_graph_traces['steering'].update_color(value)
+
+
+def on_gx_color_change(*args):
+    global config, gx_color_input, ac_graph_traces
+    value = gx_color_input.get_value()
+    config_change('gx_color', value)
+    
+    if not IS_CSP and ac_graph_traces['gx']:
+        ac_graph_traces['gx'].update_color(value)
+
+
+def on_gz_color_change(*args):
+    global config, gz_color_input, ac_graph_traces
+    value = gz_color_input.get_value()
+    config_change('gz_color', value)
+    
+    if not IS_CSP and ac_graph_traces['gz']:
+        ac_graph_traces['gz'].update_color(value)
 
 
 def on_width_change(value):
@@ -396,12 +518,12 @@ def on_trace_size_change(value):
     config_change('trace_size', value, True)
 
 
-# def on_time_window_change(value):
-#     config_change('time_window', value, True)
-
-
 def on_sample_rate_change(value):
     config_change('sample_rate', value, True)
+
+
+def on_denoise_g_change(value):
+    config_change('denoise_g', value, True)
 
 
 def acUpdate(deltaT):
@@ -416,12 +538,21 @@ def acUpdate(deltaT):
             prev_throttle = telemetry.throttle
             prev_brake = telemetry.brake
             prev_clutch = telemetry.clutch
+            prev_steering = telemetry.steering
+            prev_gx = telemetry.get_gx()
+            prev_gz = telemetry.get_gz()
 
             update_ref['timer'] = 0
             telemetry.update_telemetry()
 
             if IS_CSP:
                 values = []
+                if config.show_gz:
+                    values.append((prev_gz, telemetry.get_gz(), config.gz_color))
+                if config.show_gx:
+                    values.append((prev_gx, telemetry.get_gx(), config.gx_color))
+                if config.show_steering:
+                    values.append((prev_steering, telemetry.steering, config.steering_color))
                 if config.show_clutch:
                     values.append((prev_clutch, telemetry.clutch, config.clutch_color))
                 if config.show_throttle:
@@ -437,6 +568,12 @@ def acUpdate(deltaT):
                     ac_graph_traces['throttle'].add_value(telemetry.throttle)
                 if ac_graph_traces['clutch']:
                     ac_graph_traces['clutch'].add_value(telemetry.clutch)
+                if ac_graph_traces['steering']:
+                    ac_graph_traces['steering'].add_value(telemetry.steering)
+                if ac_graph_traces['gz']:
+                    ac_graph_traces['gz'].add_value(telemetry.get_gz())
+                if ac_graph_traces['gx']:
+                    ac_graph_traces['gx'].add_value(telemetry.get_gx())
         
         # low priorty updates
         # low frequency to reduce load
@@ -455,7 +592,16 @@ def acUpdate(deltaT):
 
 
 def app_render(deltaT):
-    global csp_graph
+    global config, csp_graph
+
+    if config.show_steering or config.show_gx or config.show_gz:
+        ac.glBegin(acsys.GL.Lines)
+        ac.glColor4f(0.5, 0.5, 0.5, 0.5)
+        center = config.app_height / 2
+        ac.glVertex2f(0, center)
+        ac.glVertex2f(config.app_width, center)
+        ac.glEnd()
+    
     csp_graph.render()
 
 

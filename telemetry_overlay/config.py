@@ -22,12 +22,19 @@ class Config:
         # self.time_window=7   # Trace time window; from 1 seconds to 60 seconds
         self.trace_size=2.0  # Trace line thickness; from 1 px to 10 px
         self.opacity=0.5 # App opacity (between 0.0 and 1.0)
+        self.denoise_g=5    # Number of measurements to combine to denoise g force traces
         self.show_throttle=True  # Show throttle trace
         self.show_brake=True # Show brake trace
         self.show_clutch=False   # Show clutch trace
+        self.show_steering=False    # Show steering trace
+        self.show_gx=False  # Show lageral g force trace
+        self.show_gz=False  # Show longitudinal g force trace
         self.throttle_color=(0.16, 1.0, 0.0, 1.0)    # Color of the throttle trace
         self.brake_color=(1.0, 0.16, 0.0, 1.0)   # Color of the brake trace
         self.clutch_color=(0.16, 1.0, 1.0, 1.0)  # Color of the clutch trace
+        self.steering_color=(0.9, 0.9, 0.9, 1.0)  # Color of the steering trace
+        self.gx_color=(1.0, 0.9, 0.0, 1.0)  # Color of the lageral g force trace
+        self.gz_color=(0.5, 0.0, 0.9, 1.0)  # Color of the longitudinal g force trace
         
         if save:
             self.save()
@@ -43,15 +50,22 @@ class Config:
         self.get_bool('GENERAL', 'show_throttle')
         self.get_bool('GENERAL', 'show_brake')
         self.get_bool('GENERAL', 'show_clutch')
+        self.get_bool('GENERAL', 'show_steering')
+        self.get_bool('GENERAL', 'show_gx')
+        self.get_bool('GENERAL', 'show_gz')
         self.get_int('GENERAL', 'app_height')
         self.get_int('GENERAL', 'app_width')
         self.get_int('GENERAL', 'sample_rate')
         self.get_int('GENERAL', 'trace_size')
+        self.get_int('GENERAL', 'denoise_g')
         # self.get_int('GENERAL', 'time_window')
         self.get_float('GENERAL', 'opacity')
         self.get_rgba('GENERAL', 'throttle_color')
         self.get_rgba('GENERAL', 'brake_color')
         self.get_rgba('GENERAL', 'clutch_color')
+        self.get_rgba('GENERAL', 'steering_color')
+        self.get_rgba('GENERAL', 'gx_color')
+        self.get_rgba('GENERAL', 'gz_color')
 
         # If update_cfg has been triggered (set to True), run save to update file.
         if self.update_cfg:
@@ -65,15 +79,19 @@ class Config:
         self.cfg_parser.set('GENERAL', 'show_throttle', str(self.show_throttle))
         self.cfg_parser.set('GENERAL', 'show_brake', str(self.show_brake))
         self.cfg_parser.set('GENERAL', 'show_clutch', str(self.show_clutch))
+        self.cfg_parser.set('GENERAL', 'show_steering', str(self.show_steering))
+        self.cfg_parser.set('GENERAL', 'show_gx', str(self.show_gx))
+        self.cfg_parser.set('GENERAL', 'show_gz', str(self.show_gz))
         self.cfg_parser.set('GENERAL', 'app_height', str(self.app_height))
         self.cfg_parser.set('GENERAL', 'app_width', str(self.app_width))
         self.cfg_parser.set('GENERAL', 'sample_rate', str(self.sample_rate))
         # self.cfg_parser.set('GENERAL', 'time_window', str(self.time_window))
         self.cfg_parser.set('GENERAL', 'opacity', str(self.opacity))
         self.cfg_parser.set('GENERAL', 'trace_size', str(self.trace_size))
+        self.cfg_parser.set('GENERAL', 'denoise_g', str(self.denoise_g))
 
         # serialize rgba tuples
-        for rgba in ['throttle_color', 'brake_color', 'clutch_color']:
+        for rgba in ['throttle_color', 'brake_color', 'clutch_color', 'steering_color', 'gx_color', 'gz_color']:
             value = ','.join([str(int(i * 100)) for i in getattr(self, rgba)])
             self.cfg_parser.set('GENERAL', rgba, value)
         

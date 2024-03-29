@@ -1,6 +1,8 @@
-# AC Pedal telemetry overlay
+# AC Telemetry overlay
 
-Assetto Corsa app that show the pedal telemetry in a graph with many config options. Is compatible with vanilla Assetto Corsa, but works best when using Custom Shaders Patch
+Assetto Corsa app that show car telemetry in a graph with many config options. Is compatible with vanilla Assetto Corsa, but works best when using Custom Shaders Patch.
+<br>
+Includes Gas, Throttle, Brake, Steering, Lateral and Longitudinal G traces.
 
 ![Overlay](./img/overlay.png)
 
@@ -16,6 +18,6 @@ Clicking the left side of the window opens/closes the settings window.
 <br>
 Trace size can only be changed when using Custom Shaders Patch.
 
-![Settings window](./img/settings-2.png)
+![Settings window](./img/settings-3.png)
 
 Settings are saved to `config.ini` inside the apps folder and can also be changed there if you prefer working with a config file.
