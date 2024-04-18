@@ -16,19 +16,27 @@ class Config:
         self.parse_config()
     
     def set_defaults(self, save=False):
-        self.app_height=100  # App height (Specifies the height of the app in pixels); from 10 to 1000
-        self.app_width=300   # App width in pixels; from 10 to 1000
-        self.sample_rate=40  # Traces sample rate; from  1 hz to 100 hz
-        # self.time_window=7   # Trace time window; from 1 seconds to 60 seconds
-        self.trace_size=2.0  # Trace line thickness; from 1 px to 10 px
-        self.opacity=0.5 # App opacity (between 0.0 and 1.0)
-        self.denoise_g=5    # Number of measurements to combine to denoise g force traces
         self.show_throttle=True  # Show throttle trace
         self.show_brake=True # Show brake trace
         self.show_clutch=False   # Show clutch trace
         self.show_steering=False    # Show steering trace
         self.show_gx=False  # Show lageral g force trace
         self.show_gz=False  # Show longitudinal g force trace
+        self.show_throttle_bar=False    # Show throttle bar
+        self.show_brake_bar=False   # Show brake bar
+        self.show_clutch_bar=False  # Show clutch bar
+        self.show_bar_value=False   # Show number value above bar
+        self.show_graph_lines=False # Show horizontal graph lines
+        self.show_telemetry_label=False # Show temetry label
+        self.app_height=100  # App height (Specifies the height of the app in pixels); from 10 to 1000
+        self.app_width=300   # App width in pixels; from 10 to 1000
+        self.sample_rate=40  # Traces sample rate; from  1 hz to 100 hz
+        self.trace_size=2.0  # Trace line thickness; from 1 px to 10 px
+        self.opacity=0.5 # App opacity (between 0.0 and 1.0)
+        self.denoise_g=5    # Number of measurements to combine to denoise g force traces
+        self.padding=0  # Padding around main window
+        self.bar_width=10   # Width of bars
+        self.open_settings_click = True # Open settings window on clicking left side of the main window
         self.throttle_color=(0.16, 1.0, 0.0, 1.0)    # Color of the throttle trace
         self.brake_color=(1.0, 0.16, 0.0, 1.0)   # Color of the brake trace
         self.clutch_color=(0.16, 1.0, 1.0, 1.0)  # Color of the clutch trace
@@ -53,12 +61,20 @@ class Config:
         self.get_bool('GENERAL', 'show_steering')
         self.get_bool('GENERAL', 'show_gx')
         self.get_bool('GENERAL', 'show_gz')
+        self.get_bool('GENERAL', 'show_throttle_bar')
+        self.get_bool('GENERAL', 'show_brake_bar')
+        self.get_bool('GENERAL', 'show_clutch_bar')
+        self.get_bool('GENERAL', 'show_bar_value')
+        self.get_bool('GENERAL', 'show_graph_lines')
+        self.get_bool('GENERAL', 'show_telemetry_label')
+        self.get_bool('GENERAL', 'open_settings_click')
         self.get_int('GENERAL', 'app_height')
         self.get_int('GENERAL', 'app_width')
         self.get_int('GENERAL', 'sample_rate')
         self.get_int('GENERAL', 'trace_size')
         self.get_int('GENERAL', 'denoise_g')
-        # self.get_int('GENERAL', 'time_window')
+        self.get_int('GENERAL', 'padding')
+        self.get_int('GENERAL', 'bar_width')
         self.get_float('GENERAL', 'opacity')
         self.get_rgba('GENERAL', 'throttle_color')
         self.get_rgba('GENERAL', 'brake_color')
@@ -82,13 +98,21 @@ class Config:
         self.cfg_parser.set('GENERAL', 'show_steering', str(self.show_steering))
         self.cfg_parser.set('GENERAL', 'show_gx', str(self.show_gx))
         self.cfg_parser.set('GENERAL', 'show_gz', str(self.show_gz))
+        self.cfg_parser.set('GENERAL', 'show_throttle_bar', str(self.show_throttle_bar))
+        self.cfg_parser.set('GENERAL', 'show_brake_bar', str(self.show_brake_bar))
+        self.cfg_parser.set('GENERAL', 'show_clutch_bar', str(self.show_clutch_bar))
+        self.cfg_parser.set('GENERAL', 'show_bar_value', str(self.show_bar_value))
+        self.cfg_parser.set('GENERAL', 'show_graph_lines', str(self.show_graph_lines))
+        self.cfg_parser.set('GENERAL', 'show_telemetry_label', str(self.show_telemetry_label))
+        self.cfg_parser.set('GENERAL', 'open_settings_click', str(self.open_settings_click))
         self.cfg_parser.set('GENERAL', 'app_height', str(self.app_height))
         self.cfg_parser.set('GENERAL', 'app_width', str(self.app_width))
         self.cfg_parser.set('GENERAL', 'sample_rate', str(self.sample_rate))
-        # self.cfg_parser.set('GENERAL', 'time_window', str(self.time_window))
         self.cfg_parser.set('GENERAL', 'opacity', str(self.opacity))
         self.cfg_parser.set('GENERAL', 'trace_size', str(self.trace_size))
         self.cfg_parser.set('GENERAL', 'denoise_g', str(self.denoise_g))
+        self.cfg_parser.set('GENERAL', 'padding', str(self.padding))
+        self.cfg_parser.set('GENERAL', 'bar_width', str(self.bar_width))
 
         # serialize rgba tuples
         for rgba in ['throttle_color', 'brake_color', 'clutch_color', 'steering_color', 'gx_color', 'gz_color']:

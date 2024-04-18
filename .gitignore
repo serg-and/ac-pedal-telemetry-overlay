@@ -1,2 +1,4 @@
 __pycache__/
+temp/
+*.zip
 config.ini
