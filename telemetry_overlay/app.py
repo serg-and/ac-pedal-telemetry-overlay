@@ -2,6 +2,7 @@ import ac, acsys
 
 from config import Config
 from data import TelemetryData
+from utils import console, console_exception
 from widgets import ACGraph, CSPGraph
 
 
@@ -43,7 +44,14 @@ class App:
         self.csp_graph = None
         if self.IS_CSP:
             self.csp_graph = CSPGraph(self.config.app_width, 0, 0, self.config.app_height, self.config.trace_size)
-        else:
+            
+            # fallback to traditional graph incase the CSP graph fails
+            if not self.csp_graph.setup():
+                self.IS_CSP = False
+                self.csp_graph = None
+                console('Falling back to traditional AC graph')
+        
+        if not self.IS_CSP:
             self.ac_graph = ACGraph(
                 window=self.app_window,
                 y=0,
@@ -53,15 +61,22 @@ class App:
                 trace_width=self.config.trace_size,
                 opacity=self.config.opacity
             )
+            self.ac_graph.setup()
         
         self.throttle_label = ac.addLabel(self.app_window, '')
         self.brake_label = ac.addLabel(self.app_window, '')
         self.clutch_label = ac.addLabel(self.app_window, '')
 
-        curr_dir = __file__.split('\\')[0:-1]
-        curr_dir.append('img\\telemetry-label.png')
-        telemetry_label_path = '\\'.join(curr_dir)
-        self.telemetry_label_texture = ac.newTexture(telemetry_label_path)
+        try:
+            curr_dir = __file__.split('\\')[0:-1]
+            curr_dir.append('img\\telemetry-label.png')
+            telemetry_label_path = '\\'.join(curr_dir)
+            self.telemetry_label_texture = ac.newTexture(telemetry_label_path)
+            if self.telemetry_label_texture == -1:
+                self.telemetry_label_texture = None
+        except Exception as e:
+            self.telemetry_label_texture = None
+            console_exception(e, 'Failed to load label texture', True)
 
         self.apply_config()
 
@@ -214,7 +229,7 @@ class App:
             ac.glColor4f(0.25, 0.25, 0.25, self.config.opacity)
             ac.glQuad(self.graph_origin_x, self.graph_origin_y, self.config.app_width, self.config.app_height)
 
-        if self.config.show_telemetry_label:
+        if self.config.show_telemetry_label and self.telemetry_label_texture:
             ac.glColor4f(1, 1, 1, 1)
             ac.glQuadTextured(0, 0, self.label_width, self.window_height, self.telemetry_label_texture)
 

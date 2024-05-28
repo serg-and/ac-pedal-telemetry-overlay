@@ -1,5 +1,7 @@
 import ac, acsys
 
+from utils import console_exception
+
 CHECKBOX_SIZE = 16
 CHECKBOX_LABEL_GAP = 10
 SPINNER_WIDTH = 150
@@ -378,22 +380,31 @@ class CSPGraph:
         self.height = height + self.trace_width
 
         # main target for drawing lines
-        self.render_target = ac.ext_createRenderTarget(self.width, self.height, False)
+        self.render_target = 0
         # secondary target for temporarily storing left shifted version of main target
-        self.shift_target = ac.ext_createRenderTarget(self.width, self.height, False)
+        self.shift_target = 0
     
     def setup(self):
-        if self.render_target:
-            ac.ext_disposeRenderTarget(self.render_target)
-        if self.shift_target:
-            ac.ext_disposeRenderTarget(self.shift_target)
+        try:
+            if self.render_target:
+                ac.ext_disposeRenderTarget(self.render_target)
+            if self.shift_target:
+                ac.ext_disposeRenderTarget(self.shift_target)
 
-        # main target for drawing lines
-        self.render_target = ac.ext_createRenderTarget(self.width, self.height, False)
-        # secondary target for temporarily storing left shifted version of main target
-        self.shift_target = ac.ext_createRenderTarget(self.width, self.height, False)
+            # main target for drawing lines
+            self.render_target = ac.ext_createRenderTarget(self.width, self.height, False)
+            # secondary target for temporarily storing left shifted version of main target
+            self.shift_target = ac.ext_createRenderTarget(self.width, self.height, False)
+
+            return True
+        except Exception as e:
+            console_exception(e, 'Failed to create CSP render targets', True)
+            return False
 
     def add_values(self, values):
+        if not self.render_target:
+            return
+
         self._shift_left()
         ac.ext_bindRenderTarget(self.render_target)
         ac.ext_glSetBlendMode(1)
@@ -427,6 +438,9 @@ class CSPGraph:
         ac.ext_generateMips(self.render_target)
 
     def _shift_left(self):
+        if not self.render_target or not self.shift_target:
+            return
+        
         # clear shift target
         ac.ext_clearRenderTarget(self.shift_target)
         ac.ext_bindRenderTarget(self.shift_target)
