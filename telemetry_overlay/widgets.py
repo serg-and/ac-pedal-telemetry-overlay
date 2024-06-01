@@ -407,7 +407,7 @@ class CSPGraph:
 
         self._shift_left()
         ac.ext_bindRenderTarget(self.render_target)
-        ac.ext_glSetBlendMode(1)
+        ac.ext_glSetBlendMode(0)
 
         inner_height = self.height - self.trace_width
         for (prev, value, color) in values:
