@@ -18,6 +18,7 @@ class App:
             'steering': None,
             'gx': None,
             'gz': None,
+            'handbrake': None,
         }
 
     def load_main(self):
@@ -66,6 +67,7 @@ class App:
         self.throttle_label = ac.addLabel(self.app_window, '')
         self.brake_label = ac.addLabel(self.app_window, '')
         self.clutch_label = ac.addLabel(self.app_window, '')
+        self.handbrake_label = ac.addLabel(self.app_window, '')
 
         try:
             curr_dir = __file__.split('\\')[0:-1]
@@ -83,12 +85,13 @@ class App:
     def apply_config(self):
         self.window_with = self.config.app_width + self.config.padding * 2
         self.window_height = self.config.app_height + self.config.padding * 2
-        self.show_bars = self.config.show_throttle_bar or self.config.show_brake_bar or self.config.show_clutch_bar
+        self.show_bars = self.config.show_throttle_bar or self.config.show_brake_bar or self.config.show_clutch_bar or self.config.show_handbrake_bar
         if self.show_bars:
             bars = 0
             if self.config.show_throttle_bar: bars += 1
             if self.config.show_brake_bar: bars += 1
             if self.config.show_clutch_bar: bars += 1
+            if self.config.show_handbrake_bar: bars += 1
             self.window_with += bars * (self.config.bar_width + 8) + 2
         
         self.graph_origin_x = self.config.padding
@@ -104,6 +107,7 @@ class App:
             (self.throttle_label, self.config.show_throttle_bar),
             (self.brake_label, self.config.show_brake_bar),
             (self.clutch_label, self.config.show_clutch_bar),
+            (self.handbrake_label, self.config.show_handbrake_bar),
         ]
         offset = 1
         for label, enabled in labels:
@@ -153,6 +157,8 @@ class App:
                 self.ac_graph_traces['throttle'] = self.ac_graph.add_trace(self.config.throttle_color)
             if self.config.show_brake and not self.ac_graph_traces['brake']:
                 self.ac_graph_traces['brake'] = self.ac_graph.add_trace(self.config.brake_color)
+            if self.config.show_handbrake and not self.ac_graph_traces['handbrake']:
+                self.ac_graph_traces['handbrake'] = self.ac_graph.add_trace(self.config.handbrake_color)
 
     def on_update(self, dt):
         self.update_ref['timer'] += dt
@@ -166,6 +172,7 @@ class App:
             prev_steering = self.telemetry.steering
             prev_gx = self.telemetry.get_gx()
             prev_gz = self.telemetry.get_gz()
+            prev_handbrake = self.telemetry.handbrake
 
             self.update_ref['timer'] = 0
             self.telemetry.update_telemetry()
@@ -175,6 +182,7 @@ class App:
                     (self.config.show_throttle_bar, self.throttle_label, self.telemetry.throttle),
                     (self.config.show_brake_bar, self.brake_label, self.telemetry.brake),
                     (self.config.show_clutch_bar, self.clutch_label, self.telemetry.clutch),
+                    (self.config.show_handbrake_bar, self.handbrake_label, self.telemetry.handbrake),
                 ]
                 for enabled, label, value in bars:
                     if enabled:
@@ -191,6 +199,8 @@ class App:
                     values.append((prev_steering, self.telemetry.steering, self.config.steering_color))
                 if self.config.show_clutch:
                     values.append((prev_clutch, self.telemetry.clutch, self.config.clutch_color))
+                if self.config.show_handbrake:
+                    values.append((prev_handbrake, self.telemetry.handbrake, self.config.handbrake_color))
                 if self.config.show_throttle:
                     values.append((prev_throttle, self.telemetry.throttle, self.config.throttle_color))
                 if self.config.show_brake:
@@ -210,6 +220,8 @@ class App:
                     self.ac_graph_traces['gz'].add_value(self.telemetry.get_gz())
                 if self.ac_graph_traces['gx']:
                     self.ac_graph_traces['gx'].add_value(self.telemetry.get_gx())
+                if self.ac_graph_traces['handbrake']:
+                    self.ac_graph_traces['handbrake'].add_value(self.telemetry.handbrake)
         
         # low priorty updates
         # low frequency to reduce load
@@ -256,6 +268,7 @@ class App:
                 (self.config.show_throttle_bar, self.telemetry.throttle, self.config.throttle_color),
                 (self.config.show_brake_bar, self.telemetry.brake, self.config.brake_color),
                 (self.config.show_clutch_bar, self.telemetry.clutch, self.config.clutch_color),
+                (self.config.show_handbrake_bar, self.telemetry.handbrake, self.config.handbrake_color),
             ]
             
             for i, (value, color) in enumerate([(value, color) for enabled, value, color in bars if enabled]):

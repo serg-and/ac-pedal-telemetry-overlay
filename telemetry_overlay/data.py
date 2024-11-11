@@ -30,6 +30,7 @@ class TelemetryData:
     steering = 0.5
     gx_values = []
     gz_values = []
+    handbrake = 0
     max_x = 2.8
     max_z = 2.8
 
@@ -49,6 +50,7 @@ class TelemetryData:
         self.brake = ac.getCarState(self.car_id, acsys.CS.Brake)
         self.clutch = 1 - ac.getCarState(self.car_id, acsys.CS.Clutch)
         self.steering = 0.5 + (ac.getCarState(self.car_id, acsys.CS.Steer) / 720) * -1
+        self.handbrake = ac.ext_getHandbrake(self.car_id)
         
         g = ac.getCarState(self.car_id, acsys.CS.AccG)
         while len(self.gx_values) >= self.config.denoise_g: self.gx_values.pop(0)

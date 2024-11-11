@@ -22,9 +22,11 @@ class Config:
         self.show_steering=False    # Show steering trace
         self.show_gx=False  # Show lageral g force trace
         self.show_gz=False  # Show longitudinal g force trace
+        self.show_handbrake=False  # Show handbrake trace
         self.show_throttle_bar=False    # Show throttle bar
         self.show_brake_bar=False   # Show brake bar
         self.show_clutch_bar=False  # Show clutch bar
+        self.show_handbrake_bar=False  # Show handbrake bar
         self.show_bar_value=False   # Show number value above bar
         self.show_graph_lines=False # Show horizontal graph lines
         self.show_telemetry_label=False # Show temetry label
@@ -43,6 +45,7 @@ class Config:
         self.steering_color=(0.9, 0.9, 0.9, 1.0)  # Color of the steering trace
         self.gx_color=(1.0, 0.9, 0.0, 1.0)  # Color of the lageral g force trace
         self.gz_color=(0.5, 0.0, 0.9, 1.0)  # Color of the longitudinal g force trace
+        self.handbrake_color=(0.2, 0.1, 0.7, 1.0)  # Color of the handbrake trace
         
         if save:
             self.save()
@@ -61,9 +64,11 @@ class Config:
         self.get_bool('GENERAL', 'show_steering')
         self.get_bool('GENERAL', 'show_gx')
         self.get_bool('GENERAL', 'show_gz')
+        self.get_bool('GENERAL', 'show_handbrake')
         self.get_bool('GENERAL', 'show_throttle_bar')
         self.get_bool('GENERAL', 'show_brake_bar')
         self.get_bool('GENERAL', 'show_clutch_bar')
+        self.get_bool('GENERAL', 'show_handbrake_bar')
         self.get_bool('GENERAL', 'show_bar_value')
         self.get_bool('GENERAL', 'show_graph_lines')
         self.get_bool('GENERAL', 'show_telemetry_label')
@@ -82,6 +87,7 @@ class Config:
         self.get_rgba('GENERAL', 'steering_color')
         self.get_rgba('GENERAL', 'gx_color')
         self.get_rgba('GENERAL', 'gz_color')
+        self.get_rgba('GENERAL', 'handbrake_color')
 
         # If update_cfg has been triggered (set to True), run save to update file.
         if self.update_cfg:
@@ -98,9 +104,11 @@ class Config:
         self.cfg_parser.set('GENERAL', 'show_steering', str(self.show_steering))
         self.cfg_parser.set('GENERAL', 'show_gx', str(self.show_gx))
         self.cfg_parser.set('GENERAL', 'show_gz', str(self.show_gz))
+        self.cfg_parser.set('GENERAL', 'show_handbrake', str(self.show_handbrake))
         self.cfg_parser.set('GENERAL', 'show_throttle_bar', str(self.show_throttle_bar))
         self.cfg_parser.set('GENERAL', 'show_brake_bar', str(self.show_brake_bar))
         self.cfg_parser.set('GENERAL', 'show_clutch_bar', str(self.show_clutch_bar))
+        self.cfg_parser.set('GENERAL', 'show_handbrake_bar', str(self.show_handbrake_bar))
         self.cfg_parser.set('GENERAL', 'show_bar_value', str(self.show_bar_value))
         self.cfg_parser.set('GENERAL', 'show_graph_lines', str(self.show_graph_lines))
         self.cfg_parser.set('GENERAL', 'show_telemetry_label', str(self.show_telemetry_label))
@@ -115,7 +123,7 @@ class Config:
         self.cfg_parser.set('GENERAL', 'bar_width', str(self.bar_width))
 
         # serialize rgba tuples
-        for rgba in ['throttle_color', 'brake_color', 'clutch_color', 'steering_color', 'gx_color', 'gz_color']:
+        for rgba in ['throttle_color', 'brake_color', 'clutch_color', 'steering_color', 'gx_color', 'gz_color', 'handbrake_color']:
             value = ','.join([str(int(i * 100)) for i in getattr(self, rgba)])
             self.cfg_parser.set('GENERAL', rgba, value)
         

@@ -195,6 +195,7 @@ class SettingsWindow:
         self._create_trace_components('steering', 185, 'Steering trace')
         self._create_trace_components('gx', 225, 'Lateral G')
         self._create_trace_components('gz', 265, 'Longitudinal G')
+        self._create_trace_components('handbrake', 305, 'Handbrake trace')
 
         self.inputs_tab.mount(
             Checkbox(
@@ -229,10 +230,20 @@ class SettingsWindow:
         self.inputs_tab.mount(
             Checkbox(
                 window=self.window,
+                label='Handbrake bar',
+                value=self.app.config.show_handbrake_bar,
+                x=20,
+                y=140,
+                onChange=self._add_handler(lambda *args: self.config_change('show_handbrake_bar', not self.app.config.show_handbrake_bar, True)),
+            )
+        )
+        self.inputs_tab.mount(
+            Checkbox(
+                window=self.window,
                 label='Show input value above bar',
                 value=self.app.config.show_bar_value,
                 x=20,
-                y=150,
+                y=180,
                 onChange=self._add_handler(lambda *args: self.config_change('show_bar_value', not self.app.config.show_bar_value, True)),
             )
         )
@@ -319,7 +330,7 @@ class SettingsWindow:
         self.traces_tab.mount(
             RGBAInput(
                 window=self.window,
-                x=160,
+                x=170,
                 y=y - 3,
                 value=getattr(self.app.config, color_name),
                 onChange=self._add_handler(on_color_change),
