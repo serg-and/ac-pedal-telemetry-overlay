@@ -39,6 +39,7 @@ class SettingsWindow:
         self.general_tab = self.tabs.add_tab('General')
         self.traces_tab = self.tabs.add_tab('Traces')
         self.inputs_tab = self.tabs.add_tab('Inputs')
+        self.wheel_tab = self.tabs.add_tab('Wheels')
         self.reset_tab = self.tabs.add_tab('Reset')
         self.tabs.set_active_tab(0)
 
@@ -154,6 +155,22 @@ class SettingsWindow:
                 onChange=self._add_handler(lambda value: self.config_change('trace_size', value, True)),
             )
         )
+        self.general_tab.mount(
+            Spinner(
+                window=self.window,
+                label='Steering trace sensitivity °',
+                label_top=True,
+                label_align='center',
+                value=self.app.config.steering_sensitivity,
+                min=100,
+                max=1000,   # more expensive for non CSP graph
+                step=1,
+                x=275,
+                y=250,
+                width=235,
+                onChange=self._add_handler(lambda value: self.config_change('steering_sensitivity', value, True)),
+            )
+        )
         
         self.general_tab.mount(
             Checkbox(
@@ -252,6 +269,81 @@ class SettingsWindow:
                 onChange=self._add_handler(lambda value: self.config_change('bar_width', value, True))
             )
         )
+
+        self.wheel_tab.mount(
+            Checkbox(
+                window=self.window,
+                label='Show wheel',
+                value=self.app.config.show_wheel,
+                x=20,
+                y=50,
+                onChange=self._add_handler(lambda *args: self.config_change('show_wheel', not self.app.config.show_wheel, True)),
+            )
+        )
+        self.wheel_tab.mount(
+            Spinner(
+                window=self.window,
+                label='Wheel thickness',
+                label_top=True,
+                label_align='center',
+                value=self.app.config.wheel_depth,
+                min=1,
+                max=30,
+                step=1,
+                x=275,
+                y=65,
+                width=235,
+                onChange=self._add_handler(lambda value: self.config_change('wheel_depth', value, True))
+            )
+        )
+        self.wheel_tab.mount(
+            Spinner(
+                window=self.window,
+                label='Wheel width',
+                label_top=True,
+                label_align='center',
+                value=self.app.config.wheel_angle,
+                min=1,
+                max=40,
+                step=1,
+                x=275,
+                y=125,
+                width=235,
+                onChange=self._add_handler(lambda value: self.config_change('wheel_angle', value, True))
+            )
+        )
+        if self.app.IS_CSP:
+            self.wheel_tab.mount(
+                Checkbox(
+                    window=self.window,
+                    label='Gear',
+                    value=self.app.config.wheel_show_gear,
+                    x=20,
+                    y=80,
+                    onChange=self._add_handler(lambda *args: self.config_change('wheel_show_gear', not self.app.config.wheel_show_gear, True)),
+                )
+            )
+            self.wheel_tab.mount(
+                Checkbox(
+                    window=self.window,
+                    label='Speed',
+                    value=self.app.config.wheel_show_speed,
+                    x=20,
+                    y=110,
+                    onChange=self._add_handler(lambda *args: self.config_change('wheel_show_speed', not self.app.config.wheel_show_speed, True)),
+                )
+            )
+            self.wheel_tab.mount(
+                Checkbox(
+                    window=self.window,
+                    label='Metric',
+                    value=self.app.config.metric,
+                    x=20,
+                    y=140,
+                    onChange=self._add_handler(lambda *args: self.config_change('metric', not self.app.config.metric, True)),
+                )
+            )
+
 
         def on_reset():
             self.app.config.set_defaults(True)

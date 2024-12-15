@@ -28,6 +28,11 @@ class Config:
         self.show_bar_value=False   # Show number value above bar
         self.show_graph_lines=False # Show horizontal graph lines
         self.show_telemetry_label=False # Show temetry label
+        self.show_wheel=False # Show wheel circle
+        self.open_settings_click=True # Open settings window on clicking left side of the main window
+        self.metric=True    # Use metric values
+        self.wheel_show_gear=True   # Show gear label in wheel
+        self.wheel_show_speed=True  # Show speed label in wheel
         self.app_height=100  # App height (Specifies the height of the app in pixels); from 10 to 1000
         self.app_width=300   # App width in pixels; from 10 to 1000
         self.sample_rate=40  # Traces sample rate; from  1 hz to 100 hz
@@ -36,7 +41,9 @@ class Config:
         self.denoise_g=5    # Number of measurements to combine to denoise g force traces
         self.padding=0  # Padding around main window
         self.bar_width=10   # Width of bars
-        self.open_settings_click = True # Open settings window on clicking left side of the main window
+        self.steering_sensitivity=720   # Max value for steering in graph
+        self.wheel_depth=8  # Thickness of the wheel
+        self.wheel_angle=15 # Width of the wheel
         self.throttle_color=(0.16, 1.0, 0.0, 1.0)    # Color of the throttle trace
         self.brake_color=(1.0, 0.16, 0.0, 1.0)   # Color of the brake trace
         self.clutch_color=(0.16, 1.0, 1.0, 1.0)  # Color of the clutch trace
@@ -67,7 +74,11 @@ class Config:
         self.get_bool('GENERAL', 'show_bar_value')
         self.get_bool('GENERAL', 'show_graph_lines')
         self.get_bool('GENERAL', 'show_telemetry_label')
+        self.get_bool('GENERAL', 'show_wheel')
         self.get_bool('GENERAL', 'open_settings_click')
+        self.get_bool('GENERAL', 'metric')
+        self.get_bool('GENERAL', 'wheel_show_gear')
+        self.get_bool('GENERAL', 'wheel_show_speed')
         self.get_int('GENERAL', 'app_height')
         self.get_int('GENERAL', 'app_width')
         self.get_int('GENERAL', 'sample_rate')
@@ -75,6 +86,9 @@ class Config:
         self.get_int('GENERAL', 'denoise_g')
         self.get_int('GENERAL', 'padding')
         self.get_int('GENERAL', 'bar_width')
+        self.get_int('GENERAL', 'steering_sensitivity')
+        self.get_int('GENERAL', 'wheel_depth')
+        self.get_int('GENERAL', 'wheel_angle')
         self.get_float('GENERAL', 'opacity')
         self.get_rgba('GENERAL', 'throttle_color')
         self.get_rgba('GENERAL', 'brake_color')
@@ -105,6 +119,9 @@ class Config:
         self.cfg_parser.set('GENERAL', 'show_graph_lines', str(self.show_graph_lines))
         self.cfg_parser.set('GENERAL', 'show_telemetry_label', str(self.show_telemetry_label))
         self.cfg_parser.set('GENERAL', 'open_settings_click', str(self.open_settings_click))
+        self.cfg_parser.set('GENERAL', 'metric', str(self.metric))
+        self.cfg_parser.set('GENERAL', 'wheel_show_gear', str(self.wheel_show_gear))
+        self.cfg_parser.set('GENERAL', 'wheel_show_speed', str(self.wheel_show_speed))
         self.cfg_parser.set('GENERAL', 'app_height', str(self.app_height))
         self.cfg_parser.set('GENERAL', 'app_width', str(self.app_width))
         self.cfg_parser.set('GENERAL', 'sample_rate', str(self.sample_rate))
@@ -113,6 +130,10 @@ class Config:
         self.cfg_parser.set('GENERAL', 'denoise_g', str(self.denoise_g))
         self.cfg_parser.set('GENERAL', 'padding', str(self.padding))
         self.cfg_parser.set('GENERAL', 'bar_width', str(self.bar_width))
+        self.cfg_parser.set('GENERAL', 'show_wheel', str(self.show_wheel))
+        self.cfg_parser.set('GENERAL', 'steering_sensitivity', str(self.steering_sensitivity))
+        self.cfg_parser.set('GENERAL', 'wheel_depth', str(self.wheel_depth))
+        self.cfg_parser.set('GENERAL', 'wheel_angle', str(self.wheel_angle))
 
         # serialize rgba tuples
         for rgba in ['throttle_color', 'brake_color', 'clutch_color', 'steering_color', 'gx_color', 'gz_color']:

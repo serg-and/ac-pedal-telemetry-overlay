@@ -1,6 +1,8 @@
 import ac, acsys
 
-from utils import console_exception
+import math
+from data import TelemetryData
+from utils import console_exception, load_texture
 
 CHECKBOX_SIZE = 16
 CHECKBOX_LABEL_GAP = 10
@@ -481,3 +483,103 @@ class CSPGraph:
         ac.ext_glVertexTex(self.width + self.x, 0 + self.y, 1, 0)
         ac.glEnd()
 
+
+class Wheel:
+    def __init__(self, IS_CSP, config, telemetry=TelemetryData, x=0, y=0, size=100, depth=5, angle=20, color=(1, 1, 1, 1)):
+        self.IS_CSP = IS_CSP
+        self.telemetry = telemetry
+        self.config = config
+        self.x = x
+        self.y = y
+        self.size = size
+        self.depth = depth
+        self.angle = angle
+        self.color = color
+
+        self.full_white_circle_texture = load_texture('img/white-circle.png')
+
+        self.font = 0
+        if self.IS_CSP:
+            self.font = ac.ext_glFontCreate('roboto', 1, 1, 1)
+        
+        self.setup()
+    
+    def setup(self):
+        self.size = self.config.app_height
+        self.depth = self.config.wheel_depth
+        self.angle = self.config.wheel_angle
+
+        self.angle_offset = self.angle / 2
+        self.radius = self.size / 2
+        self.inner_size = self.size - self.depth * 2
+
+        center =  self.depth + self.inner_size / 2
+        self.center_x = self.x + center
+        self.center_y = self.y + center
+
+        if self.config.wheel_show_gear and self.config.wheel_show_speed:
+            self.gear_size = self.inner_size * 0.35
+            self.unit_size = self.inner_size * 0.12
+            self.speed_size = self.inner_size * 0.16
+            self.y_gear = self.center_y - self.gear_size - self.inner_size * 0.07
+            self.y_unit = self.center_y + self.inner_size * 0.03
+            self.y_speed = self.y_unit + self.unit_size + self.inner_size * 0.03
+        else:
+            self.gear_size = self.inner_size * 0.39
+            self.y_gear = self.center_y - self.gear_size / 1.5
+            
+            self.unit_size = self.inner_size * 0.14
+            self.speed_size = self.inner_size * 0.22
+            gap = self.inner_size * 0.05
+            total_height = self.unit_size + self.speed_size + gap
+            self.y_unit = self.center_y - total_height / 2
+            self.y_speed = self.center_y + total_height / 2 - self.speed_size
+
+    
+    def _point(self, deg, offset):
+        x = self.x + self.radius + math.sin(math.radians(deg)) * offset
+        y = self.y + self.radius + math.cos(math.radians(deg)) * offset * -1
+
+        return x, y
+    
+    def render(self):
+        ac.glColor4f(0.24, 0.24, 0.24, self.config.opacity)
+        ac.glQuadTextured(self.x, self.y, self.size, self.size, self.full_white_circle_texture)
+        
+        ac.glColor4f(0, 0, 0, min(1, self.config.opacity + 0.1))
+        ac.glQuadTextured(self.x + self.depth, self.y + self.depth, self.inner_size, self.inner_size, self.full_white_circle_texture)
+
+        xbl, ybl = self._point(self.telemetry.steering - self.angle_offset, self.radius - self.depth)
+        xbr, ybr = self._point(self.telemetry.steering + self.angle_offset, self.radius - self.depth)
+        xtl, ytl = self._point(self.telemetry.steering - self.angle_offset, self.radius)
+        xtr, ytr = self._point(self.telemetry.steering + self.angle_offset, self.radius)
+
+        ac.glBegin(acsys.GL.Quads)
+        ac.glColor4f(self.color[0], self.color[1], self.color[2], self.color[3])
+        ac.glVertex2f(xbl, ybl)
+        ac.glVertex2f(xbr, ybr)
+        ac.glVertex2f(xtr, ytr)
+        ac.glVertex2f(xtl, ytl)
+        ac.glEnd()
+
+        if self.IS_CSP:
+            if self.config.wheel_show_gear:
+                ac.ext_glFontColor(self.font, (1, 1, 1, 1))
+                ac.ext_glFontUse(self.font, self.telemetry.gear_str, (self.center_x, self.y_gear) , self.gear_size, 2)
+            if self.config.wheel_show_speed:
+                ac.ext_glFontColor(self.font, (0.5, 0.5, 0.5, 1))
+                ac.ext_glFontUse(
+                    self.font,
+                    'KPH' if self.config.metric else 'MPH',
+                    (self.center_x, self.y_unit),
+                    self.unit_size,
+                    2
+                )
+                ac.ext_glFontColor(self.font, (1, 1, 1, 1))
+                ac.ext_glFontUse(
+                    self.font,
+                    str(round(self.telemetry.speed_kph if self.config.metric else self.telemetry.speed_mph)),
+                    (self.center_x, self.y_speed),
+                    self.speed_size,
+                    2
+                )

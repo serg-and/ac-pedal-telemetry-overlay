@@ -2,8 +2,8 @@ import ac, acsys
 
 from config import Config
 from data import TelemetryData
-from utils import console, console_exception
-from widgets import ACGraph, CSPGraph
+from utils import console, load_texture
+from widgets import ACGraph, CSPGraph, Wheel
 
 
 class App:
@@ -67,37 +67,44 @@ class App:
         self.brake_label = ac.addLabel(self.app_window, '')
         self.clutch_label = ac.addLabel(self.app_window, '')
 
-        try:
-            curr_dir = __file__.split('\\')[0:-1]
-            curr_dir.append('img\\telemetry-label.png')
-            telemetry_label_path = '\\'.join(curr_dir)
-            self.telemetry_label_texture = ac.newTexture(telemetry_label_path)
-            if self.telemetry_label_texture == -1:
-                self.telemetry_label_texture = None
-        except Exception as e:
-            self.telemetry_label_texture = None
-            console_exception(e, 'Failed to load label texture', True)
+        self.wheel = Wheel(self.IS_CSP, self.config, self.telemetry)
+
+        self.telemetry_label_texture = load_texture('img/telemetry-label.png')
+        self.half_circle_texture = load_texture('img/half-circle.png')
 
         self.apply_config()
 
     def apply_config(self):
-        self.window_with = self.config.app_width + self.config.padding * 2
+        self.items_gap = 10
+
         self.window_height = self.config.app_height + self.config.padding * 2
+        self.window_width = self.config.app_width + self.config.padding * 2
+
+        self.graph_origin_x = self.config.padding
+        self.graph_origin_y = self.config.padding
+
+        self.base_bars = self.graph_origin_x + self.config.app_width + self.items_gap
+        self.base_wheel = self.graph_origin_x + self.config.app_width + self.items_gap
+        self.base_wheel_texture = 0
+        
         self.show_bars = self.config.show_throttle_bar or self.config.show_brake_bar or self.config.show_clutch_bar
         if self.show_bars:
             bars = 0
             if self.config.show_throttle_bar: bars += 1
             if self.config.show_brake_bar: bars += 1
             if self.config.show_clutch_bar: bars += 1
-            self.window_with += bars * (self.config.bar_width + 8) + 2
+            bars_width = bars * (self.config.bar_width + 8) + 2
+            self.window_width += bars_width
+            self.base_wheel += bars_width
         
-        self.graph_origin_x = self.config.padding
-        self.graph_origin_y = self.config.padding
+        if self.config.show_wheel:
+            self.window_width += self.config.app_height / 2 + self.items_gap - self.config.padding
+            self.base_wheel_texture = self.base_wheel + self.config.app_height / 2
 
         self.label_width = 0
         if self.config.show_telemetry_label:
             self.label_width = round(258 / 1250 * self.window_height)
-            self.window_with += self.label_width + 6
+            self.window_width += self.label_width + 6
             self.graph_origin_x += self.label_width + 6
 
         labels = [
@@ -117,7 +124,7 @@ class App:
             ac.setFontSize(label, self.config.bar_width)
             offset += 1
 
-        ac.setSize(self.app_window, self.window_with, self.window_height)
+        ac.setSize(self.app_window, self.window_width, self.window_height)
         ac.setBackgroundOpacity(self.app_window, 0)
 
         # left side of the main window is clickable for settings
@@ -154,6 +161,10 @@ class App:
             if self.config.show_brake and not self.ac_graph_traces['brake']:
                 self.ac_graph_traces['brake'] = self.ac_graph.add_trace(self.config.brake_color)
 
+        self.wheel.x = self.base_wheel
+        self.wheel.y = self.graph_origin_y
+        self.wheel.setup()
+
     def on_update(self, dt):
         self.update_ref['timer'] += dt
         self.update_low_freq_ref['timer'] += dt
@@ -163,7 +174,7 @@ class App:
             prev_throttle = self.telemetry.throttle
             prev_brake = self.telemetry.brake
             prev_clutch = self.telemetry.clutch
-            prev_steering = self.telemetry.steering
+            prev_steering_norm = self.telemetry.steering_norm
             prev_gx = self.telemetry.get_gx()
             prev_gz = self.telemetry.get_gz()
 
@@ -188,7 +199,7 @@ class App:
                 if self.config.show_gx:
                     values.append((prev_gx, self.telemetry.get_gx(), self.config.gx_color))
                 if self.config.show_steering:
-                    values.append((prev_steering, self.telemetry.steering, self.config.steering_color))
+                    values.append((prev_steering_norm, self.telemetry.steering_norm, self.config.steering_color))
                 if self.config.show_clutch:
                     values.append((prev_clutch, self.telemetry.clutch, self.config.clutch_color))
                 if self.config.show_throttle:
@@ -205,7 +216,7 @@ class App:
                 if self.ac_graph_traces['clutch']:
                     self.ac_graph_traces['clutch'].add_value(self.telemetry.clutch)
                 if self.ac_graph_traces['steering']:
-                    self.ac_graph_traces['steering'].add_value(self.telemetry.steering)
+                    self.ac_graph_traces['steering'].add_value(self.telemetry.steering_norm)
                 if self.ac_graph_traces['gz']:
                     self.ac_graph_traces['gz'].add_value(self.telemetry.get_gz())
                 if self.ac_graph_traces['gx']:
@@ -225,8 +236,13 @@ class App:
                 self.config.save()
 
     def on_render(self, dt):
+        if self.config.show_wheel:
+            ac.glColor4f(0, 0, 0, self.config.opacity)
+            ac.glQuadTextured(self.base_wheel_texture, 0, self.window_height / 2, self.window_height, self.half_circle_texture)
+            self.wheel.render()
+
         if self.IS_CSP:
-            ac.glColor4f(0.25, 0.25, 0.25, self.config.opacity)
+            ac.glColor4f(0.24, 0.24, 0.24, self.config.opacity)
             ac.glQuad(self.graph_origin_x, self.graph_origin_y, self.config.app_width, self.config.app_height)
 
         if self.config.show_telemetry_label and self.telemetry_label_texture:
@@ -259,8 +275,8 @@ class App:
             ]
             
             for i, (value, color) in enumerate([(value, color) for enabled, value, color in bars if enabled]):
-                x = self.graph_origin_x + self.config.app_width + i * (self.config.bar_width + 8) + 10
-                ac.glColor4f(0.25, 0.25, 0.25, self.config.opacity)
+                x = self.base_bars + i * (self.config.bar_width + 8)
+                ac.glColor4f(0.24, 0.24, 0.24, self.config.opacity)
                 ac.glQuad(x, bar_start_y, self.config.bar_width, bar_height)
                 height = bar_height * value
                 ac.glColor3f(color[0], color[1], color[2])

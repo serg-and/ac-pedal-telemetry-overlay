@@ -27,11 +27,15 @@ class TelemetryData:
     throttle = 0
     brake = 0
     clutch = 0
-    steering = 0.5
+    steering = 0
+    steering_norm = 0.5
     gx_values = []
     gz_values = []
     max_x = 2.8
     max_z = 2.8
+    gear_str = 'N'
+    speed_kph = 0
+    speed_mph = 0
 
     def __init__(self, config):
         self.config = config
@@ -48,13 +52,31 @@ class TelemetryData:
         self.throttle = ac.getCarState(self.car_id, acsys.CS.Gas)
         self.brake = ac.getCarState(self.car_id, acsys.CS.Brake)
         self.clutch = 1 - ac.getCarState(self.car_id, acsys.CS.Clutch)
-        self.steering = 0.5 + (ac.getCarState(self.car_id, acsys.CS.Steer) / 720) * -1
+        self.steering = ac.getCarState(self.car_id, acsys.CS.Steer)
+        self.steering_norm = min(
+            max(
+                0.5 + (self.steering / self.config.steering_sensitivity) * -1,
+                0.0
+            ),
+            1.0
+        )
         
         g = ac.getCarState(self.car_id, acsys.CS.AccG)
         while len(self.gx_values) >= self.config.denoise_g: self.gx_values.pop(0)
         while len(self.gz_values) >= self.config.denoise_g: self.gz_values.pop(0)
         self.gx_values.append(min(max(g[0] * -1, self.max_x * -1.1), self.max_x * 1.1))
         self.gz_values.append(min(max(g[2] * -1, self.max_z * -1.1), self.max_z * 1.1))
+
+        gear = ac.getCarState(self.car_id, acsys.CS.Gear)
+        if gear == 0:
+            self.gear_str = 'R'
+        elif gear == 1:
+            self.gear_str = 'N'
+        else:
+            self.gear_str = str(gear - 1)
+
+        self.speed_kph = ac.getCarState(self.car_id, acsys.CS.SpeedKMH)
+        self.speed_mph = ac.getCarState(self.car_id, acsys.CS.SpeedMPH)
         
     def get_gx(self):
         if not len(self.gx_values):
