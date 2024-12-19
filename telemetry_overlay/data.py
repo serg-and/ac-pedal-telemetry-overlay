@@ -30,6 +30,7 @@ class TelemetryData:
     handbrake = 0
     steering = 0
     steering_norm = 0.5
+    ffb = 0
     gx_values = []
     gz_values = []
     max_x = 2.8
@@ -54,6 +55,7 @@ class TelemetryData:
         self.throttle = ac.getCarState(self.car_id, acsys.CS.Gas)
         self.brake = ac.getCarState(self.car_id, acsys.CS.Brake)
         self.clutch = 1 - ac.getCarState(self.car_id, acsys.CS.Clutch)
+        self.ffb = ac.getCarState(self.car_id, acsys.CS.LastFF)
         self.steering = ac.getCarState(self.car_id, acsys.CS.Steer)
         self.steering_norm = min(
             max(

@@ -23,10 +23,12 @@ class Config:
         self.show_handbrake=False   # Show handbrake trace
         self.show_gx=False  # Show lageral g force trace
         self.show_gz=False  # Show longitudinal g force trace
+        self.show_ffb=False # Show force feedback trace
         self.show_throttle_bar=False    # Show throttle bar
         self.show_brake_bar=False   # Show brake bar
         self.show_clutch_bar=False  # Show clutch bar
         self.show_handbrake_bar=False  # Show handbrake bar
+        self.show_ffb_bar=False  # Show force feedback bar
         self.show_bar_value=False   # Show number value above bar
         self.show_graph_lines=False # Show horizontal graph lines
         self.show_telemetry_label=False # Show temetry label
@@ -37,6 +39,7 @@ class Config:
         self.wheel_show_speed=True  # Show speed label in wheel
         self.pedals_end_stop=True   # Pedal end stop indicator
         self.pedals_base_stop=False # Pedal base stop indicator
+        self.ffb_flash_on_clip=True # Flash force feedback bar red when clipping
         self.app_height=100  # App height (Specifies the height of the app in pixels); from 10 to 1000
         self.app_width=300   # App width in pixels; from 10 to 1000
         self.sample_rate=40  # Traces sample rate; from  1 hz to 100 hz
@@ -55,6 +58,7 @@ class Config:
         self.handbrake_color=(0.0, 0.16, 1.0, 1.0)   # Color of the handbrake trace
         self.gx_color=(1.0, 0.9, 0.0, 1.0)  # Color of the lageral g force trace
         self.gz_color=(0.5, 0.0, 0.9, 1.0)  # Color of the longitudinal g force trace
+        self.ffb_color=(0.55, 0.55, 0.55, 1.0) # Color of the force feedback trace
         
         if save:
             self.save()
@@ -74,10 +78,12 @@ class Config:
         self.get_bool('GENERAL', 'show_handbrake')
         self.get_bool('GENERAL', 'show_gx')
         self.get_bool('GENERAL', 'show_gz')
+        self.get_bool('GENERAL', 'show_ffb')
         self.get_bool('GENERAL', 'show_throttle_bar')
         self.get_bool('GENERAL', 'show_brake_bar')
         self.get_bool('GENERAL', 'show_clutch_bar')
         self.get_bool('GENERAL', 'show_handbrake_bar')
+        self.get_bool('GENERAL', 'show_ffb_bar')
         self.get_bool('GENERAL', 'show_bar_value')
         self.get_bool('GENERAL', 'show_graph_lines')
         self.get_bool('GENERAL', 'show_telemetry_label')
@@ -88,6 +94,7 @@ class Config:
         self.get_bool('GENERAL', 'wheel_show_speed')
         self.get_bool('GENERAL', 'pedals_end_stop')
         self.get_bool('GENERAL', 'pedals_base_stop')
+        self.get_bool('GENERAL', 'ffb_flash_on_clip')
         self.get_int('GENERAL', 'app_height')
         self.get_int('GENERAL', 'app_width')
         self.get_int('GENERAL', 'sample_rate')
@@ -106,6 +113,7 @@ class Config:
         self.get_rgba('GENERAL', 'gx_color')
         self.get_rgba('GENERAL', 'gz_color')
         self.get_rgba('GENERAL', 'handbrake_color')
+        self.get_rgba('GENERAL', 'ffb_color')
 
         # If update_cfg has been triggered (set to True), run save to update file.
         if self.update_cfg:
@@ -123,10 +131,12 @@ class Config:
         self.cfg_parser.set('GENERAL', 'show_handbrake', str(self.show_handbrake))
         self.cfg_parser.set('GENERAL', 'show_gx', str(self.show_gx))
         self.cfg_parser.set('GENERAL', 'show_gz', str(self.show_gz))
+        self.cfg_parser.set('GENERAL', 'show_ffb', str(self.show_ffb))
         self.cfg_parser.set('GENERAL', 'show_throttle_bar', str(self.show_throttle_bar))
         self.cfg_parser.set('GENERAL', 'show_brake_bar', str(self.show_brake_bar))
         self.cfg_parser.set('GENERAL', 'show_clutch_bar', str(self.show_clutch_bar))
         self.cfg_parser.set('GENERAL', 'show_handbrake_bar', str(self.show_handbrake_bar))
+        self.cfg_parser.set('GENERAL', 'show_ffb_bar', str(self.show_ffb_bar))
         self.cfg_parser.set('GENERAL', 'show_bar_value', str(self.show_bar_value))
         self.cfg_parser.set('GENERAL', 'show_graph_lines', str(self.show_graph_lines))
         self.cfg_parser.set('GENERAL', 'show_telemetry_label', str(self.show_telemetry_label))
@@ -136,6 +146,7 @@ class Config:
         self.cfg_parser.set('GENERAL', 'wheel_show_speed', str(self.wheel_show_speed))
         self.cfg_parser.set('GENERAL', 'pedals_end_stop', str(self.pedals_end_stop))
         self.cfg_parser.set('GENERAL', 'pedals_base_stop', str(self.pedals_base_stop))
+        self.cfg_parser.set('GENERAL', 'ffb_flash_on_clip', str(self.ffb_flash_on_clip))
         self.cfg_parser.set('GENERAL', 'app_height', str(self.app_height))
         self.cfg_parser.set('GENERAL', 'app_width', str(self.app_width))
         self.cfg_parser.set('GENERAL', 'sample_rate', str(self.sample_rate))
@@ -150,7 +161,17 @@ class Config:
         self.cfg_parser.set('GENERAL', 'wheel_angle', str(self.wheel_angle))
 
         # serialize rgba tuples
-        for rgba in ['throttle_color', 'brake_color', 'clutch_color', 'steering_color', 'gx_color', 'gz_color', 'handbrake_color']:
+        color_attrs = [
+            'throttle_color',
+            'brake_color',
+            'clutch_color',
+            'steering_color',
+            'gx_color',
+            'gz_color',
+            'handbrake_color',
+            'ffb_color'
+        ]
+        for rgba in color_attrs:
             value = ','.join([str(int(i * 100)) for i in getattr(self, rgba)])
             self.cfg_parser.set('GENERAL', rgba, value)
         

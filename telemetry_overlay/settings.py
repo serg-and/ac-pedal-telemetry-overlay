@@ -207,13 +207,14 @@ class SettingsWindow:
         )
 
         self._create_trace_components('throttle', 65, 'Throttle trace', True)
-        self._create_trace_components('brake', 105, 'Brake trace')
-        self._create_trace_components('clutch', 145, 'Clutch trace')
-        self._create_trace_components('steering', 185, 'Steering trace')
-        self._create_trace_components('gx', 225, 'Lateral G')
-        self._create_trace_components('gz', 265, 'Longitudinal G')
+        self._create_trace_components('brake', 100, 'Brake trace')
+        self._create_trace_components('clutch', 135, 'Clutch trace')
+        self._create_trace_components('steering', 170, 'Steering trace')
+        self._create_trace_components('gx', 205, 'Lateral G')
+        self._create_trace_components('gz', 240, 'Longitudinal G')
+        self._create_trace_components('ffb', 275, 'Force feedback')
         if self.app.IS_CSP:
-            self._create_trace_components('handbrake', 305, 'Handbrake')
+            self._create_trace_components('handbrake', 310, 'Handbrake')
 
         self.inputs_tab.mount(
             Checkbox(
@@ -245,6 +246,16 @@ class SettingsWindow:
                 onChange=self._add_handler(lambda *args: self.config_change('show_clutch_bar', not self.app.config.show_clutch_bar, True)),
             )
         )
+        self.inputs_tab.mount(
+            Checkbox(
+                window=self.window,
+                label='Force feedback',
+                value=self.app.config.show_ffb_bar,
+                x=20,
+                y=140,
+                onChange=self._add_handler(lambda *args: self.config_change('show_ffb_bar', not self.app.config.show_ffb_bar, True)),
+            )
+        )
         if self.app.IS_CSP:
             self.inputs_tab.mount(
                 Checkbox(
@@ -252,7 +263,7 @@ class SettingsWindow:
                     label='Handbrake',
                     value=self.app.config.show_handbrake_bar,
                     x=20,
-                    y=140,
+                    y=170,
                     onChange=self._add_handler(lambda *args: self.config_change('show_handbrake_bar', not self.app.config.show_handbrake_bar, True)),
                 )
             )
@@ -263,7 +274,7 @@ class SettingsWindow:
                 label='Show input value above bar',
                 value=self.app.config.show_bar_value,
                 x=20,
-                y=180,
+                y=210,
                 onChange=self._add_handler(lambda *args: self.config_change('show_bar_value', not self.app.config.show_bar_value, True)),
             )
         )
@@ -273,7 +284,7 @@ class SettingsWindow:
                 label='End stop',
                 value=self.app.config.pedals_end_stop,
                 x=20,
-                y=210,
+                y=240,
                 onChange=self._add_handler(lambda *args: self.config_change('pedals_end_stop', not self.app.config.pedals_end_stop, True)),
             )
         )
@@ -283,8 +294,18 @@ class SettingsWindow:
                 label='Base stop',
                 value=self.app.config.pedals_base_stop,
                 x=20,
-                y=240,
+                y=270,
                 onChange=self._add_handler(lambda *args: self.config_change('pedals_base_stop', not self.app.config.pedals_base_stop, True)),
+            )
+        )
+        self.inputs_tab.mount(
+            Checkbox(
+                window=self.window,
+                label='Flash red when force feedback is clipping',
+                value=self.app.config.ffb_flash_on_clip,
+                x=20,
+                y=300,
+                onChange=self._add_handler(lambda *args: self.config_change('ffb_flash_on_clip', not self.app.config.ffb_flash_on_clip, True)),
             )
         )
         self.inputs_tab.mount(
