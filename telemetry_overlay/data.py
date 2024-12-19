@@ -27,6 +27,7 @@ class TelemetryData:
     throttle = 0
     brake = 0
     clutch = 0
+    handbrake = 0
     steering = 0
     steering_norm = 0.5
     gx_values = []
@@ -37,7 +38,8 @@ class TelemetryData:
     speed_kph = 0
     speed_mph = 0
 
-    def __init__(self, config):
+    def __init__(self, IS_CSP, config):
+        self.IS_CSP = IS_CSP
         self.config = config
         self.update_globals()
         self.update_telemetry()
@@ -60,6 +62,9 @@ class TelemetryData:
             ),
             1.0
         )
+
+        if self.IS_CSP:
+            self.handbrake = ac.ext_getHandbrake(self.car_id)
         
         g = ac.getCarState(self.car_id, acsys.CS.AccG)
         while len(self.gx_values) >= self.config.denoise_g: self.gx_values.pop(0)

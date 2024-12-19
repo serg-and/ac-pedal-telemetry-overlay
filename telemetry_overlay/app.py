@@ -22,7 +22,7 @@ class App:
 
     def load_main(self):
         self.config = Config()
-        self.telemetry = TelemetryData(self.config)
+        self.telemetry = TelemetryData(self.IS_CSP, self.config)
 
         self.app_window = ac.newApp("Telemetry Overlay")
         ac.setTitle(self.app_window, "")
@@ -159,6 +159,7 @@ class App:
             prev_steering_norm = self.telemetry.steering_norm
             prev_gx = self.telemetry.get_gx()
             prev_gz = self.telemetry.get_gz()
+            prev_handbrake = self.telemetry.handbrake
 
             self.update_ref['timer'] = 0
             self.telemetry.update_telemetry()
@@ -173,6 +174,8 @@ class App:
                     values.append((prev_gx, self.telemetry.get_gx(), self.config.gx_color))
                 if self.config.show_steering:
                     values.append((prev_steering_norm, self.telemetry.steering_norm, self.config.steering_color))
+                if self.config.show_handbrake:
+                    values.append((prev_handbrake, self.telemetry.handbrake, self.config.handbrake_color))
                 if self.config.show_clutch:
                     values.append((prev_clutch, self.telemetry.clutch, self.config.clutch_color))
                 if self.config.show_throttle:

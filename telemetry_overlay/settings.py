@@ -212,11 +212,13 @@ class SettingsWindow:
         self._create_trace_components('steering', 185, 'Steering trace')
         self._create_trace_components('gx', 225, 'Lateral G')
         self._create_trace_components('gz', 265, 'Longitudinal G')
+        if self.app.IS_CSP:
+            self._create_trace_components('handbrake', 305, 'Handbrake')
 
         self.inputs_tab.mount(
             Checkbox(
                 window=self.window,
-                label='Throttle bar',
+                label='Throttle',
                 value=self.app.config.show_throttle_bar,
                 x=20,
                 y=50,
@@ -226,7 +228,7 @@ class SettingsWindow:
         self.inputs_tab.mount(
             Checkbox(
                 window=self.window,
-                label='Brake bar',
+                label='Brake',
                 value=self.app.config.show_brake_bar,
                 x=20,
                 y=80,
@@ -236,20 +238,32 @@ class SettingsWindow:
         self.inputs_tab.mount(
             Checkbox(
                 window=self.window,
-                label='Clutch bar',
+                label='Clutch',
                 value=self.app.config.show_clutch_bar,
                 x=20,
                 y=110,
                 onChange=self._add_handler(lambda *args: self.config_change('show_clutch_bar', not self.app.config.show_clutch_bar, True)),
             )
         )
+        if self.app.IS_CSP:
+            self.inputs_tab.mount(
+                Checkbox(
+                    window=self.window,
+                    label='Handbrake',
+                    value=self.app.config.show_handbrake_bar,
+                    x=20,
+                    y=140,
+                    onChange=self._add_handler(lambda *args: self.config_change('show_handbrake_bar', not self.app.config.show_handbrake_bar, True)),
+                )
+            )
+
         self.inputs_tab.mount(
             Checkbox(
                 window=self.window,
                 label='Show input value above bar',
                 value=self.app.config.show_bar_value,
                 x=20,
-                y=150,
+                y=180,
                 onChange=self._add_handler(lambda *args: self.config_change('show_bar_value', not self.app.config.show_bar_value, True)),
             )
         )
@@ -259,7 +273,7 @@ class SettingsWindow:
                 label='End stop',
                 value=self.app.config.pedals_end_stop,
                 x=20,
-                y=180,
+                y=210,
                 onChange=self._add_handler(lambda *args: self.config_change('pedals_end_stop', not self.app.config.pedals_end_stop, True)),
             )
         )
@@ -269,7 +283,7 @@ class SettingsWindow:
                 label='Base stop',
                 value=self.app.config.pedals_base_stop,
                 x=20,
-                y=210,
+                y=240,
                 onChange=self._add_handler(lambda *args: self.config_change('pedals_base_stop', not self.app.config.pedals_base_stop, True)),
             )
         )
