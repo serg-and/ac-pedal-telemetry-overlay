@@ -39,7 +39,7 @@ class SettingsWindow:
         self.general_tab = self.tabs.add_tab('General')
         self.traces_tab = self.tabs.add_tab('Traces')
         self.inputs_tab = self.tabs.add_tab('Inputs')
-        self.wheel_tab = self.tabs.add_tab('Wheels')
+        self.wheel_tab = self.tabs.add_tab('Wheel')
         self.reset_tab = self.tabs.add_tab('Reset')
         self.tabs.set_active_tab(0)
 
