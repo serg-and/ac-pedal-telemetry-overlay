@@ -2,3 +2,4 @@ __pycache__/
 temp/
 *.zip
 config.ini
+RELEASE.txt

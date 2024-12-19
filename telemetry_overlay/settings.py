@@ -254,6 +254,26 @@ class SettingsWindow:
             )
         )
         self.inputs_tab.mount(
+            Checkbox(
+                window=self.window,
+                label='End stop',
+                value=self.app.config.pedals_end_stop,
+                x=20,
+                y=180,
+                onChange=self._add_handler(lambda *args: self.config_change('pedals_end_stop', not self.app.config.pedals_end_stop, True)),
+            )
+        )
+        self.inputs_tab.mount(
+            Checkbox(
+                window=self.window,
+                label='Base stop',
+                value=self.app.config.pedals_base_stop,
+                x=20,
+                y=210,
+                onChange=self._add_handler(lambda *args: self.config_change('pedals_base_stop', not self.app.config.pedals_base_stop, True)),
+            )
+        )
+        self.inputs_tab.mount(
             Spinner(
                 window=self.window,
                 label='Bar width',

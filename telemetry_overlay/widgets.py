@@ -484,11 +484,144 @@ class CSPGraph:
         ac.glEnd()
 
 
+class Pedals:
+    def __init__(self, app_window, IS_CSP, config, telemetry=TelemetryData, x=0, y=0, height=100):
+        self.IS_CSP = IS_CSP
+        self.config = config
+        self.telemetry = telemetry
+        self.x = x
+        self.y = y
+        self.height = height
+
+        self.font = 0
+        self.throttle_label = None
+        self.brake_label = None
+        self.clutch_label = None
+        if self.IS_CSP:
+            self.font = ac.ext_glFontCreate('roboto', 1, 1, 1)
+        else:
+            self.throttle_label = ac.addLabel(app_window, '')
+            self.brake_label = ac.addLabel(app_window, '')
+            self.clutch_label = ac.addLabel(app_window, '')
+
+        self.setup()
+        
+    def setup(self):
+        self.show_bars = self.config.show_throttle_bar or self.config.show_brake_bar or self.config.show_clutch_bar
+
+        self.pedal_height = self.height
+        self.pedal_y= self.y
+
+        self.end_height = max(2, self.pedal_height * 0.015)
+        self.end_gap = max(2, self.end_height / 1.15)
+        if self.config.show_bar_value:
+            self.pedal_height = self.pedal_height - self.config.bar_width - self.end_gap
+            self.pedal_y = self.pedal_y + self.config.bar_width + self.end_gap
+
+        self.bar_height = self.pedal_height
+        self.bar_y = self.pedal_y
+
+        combined_height = self.end_height + self.end_gap
+
+        if self.config.pedals_end_stop:
+            self.bar_y += combined_height
+            self.bar_height -= combined_height
+        if self.config.pedals_base_stop:
+            self.bar_height -= combined_height
+
+        self.gap_x = round(self.config.bar_width / 2)
+
+        if not self.IS_CSP:
+            i = 0
+            for show, label in [
+                (self.config.show_throttle_bar, self.throttle_label),
+                (self.config.show_brake_bar, self.brake_label),
+                (self.config.show_clutch_bar, self.clutch_label),
+            ]:
+                if label:
+                    if show and self.config.show_bar_value:
+                        ac.setPosition(label, self.x + i * (self.config.bar_width + self.gap_x), self.y - self.end_gap - self.end_height)
+                        ac.setSize(label, self.config.bar_width, self.config.bar_width)
+                        ac.setFontSize(label, self.config.bar_width)
+                        ac.setFontAlignment(label, 'center')
+                        ac.setVisible(label, 1)
+                        ac.setBackgroundColor(label, 1, 0, 0)
+                        i += 1
+                    else:
+                        ac.setVisible(label, 0)
+
+    
+    def width(self):
+        bars = 0
+        if self.config.show_throttle_bar: bars +=1 
+        if self.config.show_brake_bar: bars +=1 
+        if self.config.show_clutch_bar: bars +=1
+
+        if bars == 0:
+            return 0
+        
+        return bars * self.config.bar_width + (bars - 1) * self.gap_x
+    
+    def update(self):
+        if not self.show_bars or self.IS_CSP or not self.config.show_bar_value:
+            return
+        
+        for show, label, value in [
+            (self.config.show_throttle_bar, self.throttle_label, self.telemetry.throttle),
+            (self.config.show_brake_bar, self.brake_label, self.telemetry.brake),
+            (self.config.show_clutch_bar, self.clutch_label, self.telemetry.clutch),
+        ]:
+            if show and label:
+                rounded = round(value * 100)
+                ac.setText(label, '00' if rounded >= 100 else str(rounded))
+
+    def render(self):
+        if not self.show_bars:
+            return
+        
+        bars = [
+            (self.config.show_throttle_bar, self.telemetry.throttle, self.config.throttle_color),
+            (self.config.show_brake_bar, self.telemetry.brake, self.config.brake_color),
+            (self.config.show_clutch_bar, self.telemetry.clutch, self.config.clutch_color),
+        ]
+        for i, (value, color) in enumerate([rest for enabled, *rest in bars if enabled]):
+            x = self.x + i * (self.config.bar_width + self.gap_x)
+            
+            # bar background
+            ac.glColor4f(0.24, 0.24, 0.24, self.config.opacity)
+            ac.glQuad(x, self.bar_y, self.config.bar_width, self.bar_height)
+
+            height = self.bar_height * value
+            ac.glColor3f(color[0], color[1], color[2])
+            ac.glQuad(x, self.bar_y + self.bar_height - height, self.config.bar_width, height)
+
+            # end stop
+            if self.config.pedals_end_stop:
+                if value == 1: ac.glColor3f(color[0], color[1], color[2])
+                else: ac.glColor4f(0.24, 0.24, 0.24, self.config.opacity)
+                ac.glQuad(x, self.pedal_y, self.config.bar_width, self.end_height)
+            # base stop
+            if self.config.pedals_base_stop:
+                if value > 0: ac.glColor3f(color[0], color[1], color[2])
+                else: ac.glColor4f(0.24, 0.24, 0.24, self.config.opacity)
+                ac.glQuad(x, self.pedal_y + self.pedal_height - self.end_height, self.config.bar_width, self.end_height)
+
+            if self.IS_CSP and self.config.show_bar_value:
+                rounded = round(value * 100)
+                ac.ext_glFontColor(self.font, (1, 1, 1, 1))
+                ac.ext_glFontUse(
+                    self.font,
+                    '00' if rounded >= 100 else str(rounded),
+                    (x + self.config.bar_width / 2, self.y - self.config.bar_width * 0.2),
+                    self.config.bar_width,
+                    2
+                )
+
 class Wheel:
     def __init__(self, IS_CSP, config, telemetry=TelemetryData, x=0, y=0, size=100, depth=5, angle=20, color=(1, 1, 1, 1)):
         self.IS_CSP = IS_CSP
-        self.telemetry = telemetry
         self.config = config
+        self.telemetry = telemetry
         self.x = x
         self.y = y
         self.size = size

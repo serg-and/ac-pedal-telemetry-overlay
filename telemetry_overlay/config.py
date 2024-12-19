@@ -33,6 +33,8 @@ class Config:
         self.metric=True    # Use metric values
         self.wheel_show_gear=True   # Show gear label in wheel
         self.wheel_show_speed=True  # Show speed label in wheel
+        self.pedals_end_stop=True   # Pedal end stop indicator
+        self.pedals_base_stop=False # Pedal base stop indicator
         self.app_height=100  # App height (Specifies the height of the app in pixels); from 10 to 1000
         self.app_width=300   # App width in pixels; from 10 to 1000
         self.sample_rate=40  # Traces sample rate; from  1 hz to 100 hz
@@ -79,6 +81,8 @@ class Config:
         self.get_bool('GENERAL', 'metric')
         self.get_bool('GENERAL', 'wheel_show_gear')
         self.get_bool('GENERAL', 'wheel_show_speed')
+        self.get_bool('GENERAL', 'pedals_end_stop')
+        self.get_bool('GENERAL', 'pedals_base_stop')
         self.get_int('GENERAL', 'app_height')
         self.get_int('GENERAL', 'app_width')
         self.get_int('GENERAL', 'sample_rate')
@@ -122,6 +126,8 @@ class Config:
         self.cfg_parser.set('GENERAL', 'metric', str(self.metric))
         self.cfg_parser.set('GENERAL', 'wheel_show_gear', str(self.wheel_show_gear))
         self.cfg_parser.set('GENERAL', 'wheel_show_speed', str(self.wheel_show_speed))
+        self.cfg_parser.set('GENERAL', 'pedals_end_stop', str(self.pedals_end_stop))
+        self.cfg_parser.set('GENERAL', 'pedals_base_stop', str(self.pedals_base_stop))
         self.cfg_parser.set('GENERAL', 'app_height', str(self.app_height))
         self.cfg_parser.set('GENERAL', 'app_width', str(self.app_width))
         self.cfg_parser.set('GENERAL', 'sample_rate', str(self.sample_rate))

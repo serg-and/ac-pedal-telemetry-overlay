@@ -3,7 +3,7 @@ import ac, acsys
 from config import Config
 from data import TelemetryData
 from utils import console, load_texture
-from widgets import ACGraph, CSPGraph, Wheel
+from widgets import ACGraph, CSPGraph, Pedals, Wheel
 
 
 class App:
@@ -62,10 +62,8 @@ class App:
                 opacity=self.config.opacity
             )
             self.ac_graph.setup()
-        
-        self.throttle_label = ac.addLabel(self.app_window, '')
-        self.brake_label = ac.addLabel(self.app_window, '')
-        self.clutch_label = ac.addLabel(self.app_window, '')
+
+        self.pedals = Pedals(self.app_window, self.IS_CSP, self.config, self.telemetry)
 
         self.wheel = Wheel(self.IS_CSP, self.config, self.telemetry)
 
@@ -75,7 +73,7 @@ class App:
         self.apply_config()
 
     def apply_config(self):
-        self.items_gap = 10
+        self.items_gap = 4 + round(self.config.padding / 4 + self.config.app_height / 40)
 
         self.window_height = self.config.app_height + self.config.padding * 2
         self.window_width = self.config.app_width + self.config.padding * 2
@@ -83,46 +81,33 @@ class App:
         self.graph_origin_x = self.config.padding
         self.graph_origin_y = self.config.padding
 
-        self.base_bars = self.graph_origin_x + self.config.app_width + self.items_gap
-        self.base_wheel = self.graph_origin_x + self.config.app_width + self.items_gap
-        self.base_wheel_texture = 0
-        
-        self.show_bars = self.config.show_throttle_bar or self.config.show_brake_bar or self.config.show_clutch_bar
-        if self.show_bars:
-            bars = 0
-            if self.config.show_throttle_bar: bars += 1
-            if self.config.show_brake_bar: bars += 1
-            if self.config.show_clutch_bar: bars += 1
-            bars_width = bars * (self.config.bar_width + 8) + 2
-            self.window_width += bars_width
-            self.base_wheel += bars_width
-        
-        if self.config.show_wheel:
-            self.window_width += self.config.app_height / 2 + self.items_gap - self.config.padding
-            self.base_wheel_texture = self.base_wheel + self.config.app_height / 2
-
         self.label_width = 0
         if self.config.show_telemetry_label:
             self.label_width = round(258 / 1250 * self.window_height)
             self.window_width += self.label_width + 6
             self.graph_origin_x += self.label_width + 6
 
-        labels = [
-            (self.throttle_label, self.config.show_throttle_bar),
-            (self.brake_label, self.config.show_brake_bar),
-            (self.clutch_label, self.config.show_clutch_bar),
-        ]
-        offset = 1
-        for label, enabled in labels:
-            if not self.config.show_bar_value or not enabled:
-                # hide label if not enabled
-                ac.setText(label, '')
-                continue
+        self.base_bars = self.graph_origin_x + self.config.app_width + self.items_gap
+        self.base_wheel = self.graph_origin_x + self.config.app_width + self.items_gap
+        self.base_wheel_texture = 0
 
-            ac.setPosition(label, self.graph_origin_x + self.config.app_width + 2 + offset * (self.config.bar_width + 8), self.graph_origin_y - self.config.bar_width * 0.3)
-            ac.setFontAlignment(label, 'right')
-            ac.setFontSize(label, self.config.bar_width)
-            offset += 1
+        self.pedals.x = self.base_bars
+        self.pedals.y = self.graph_origin_y
+        self.pedals.height = self.config.app_height
+        self.pedals.setup()
+
+        if self.pedals.show_bars:
+            width = self.pedals.width()
+            self.base_wheel += width + self.items_gap
+            self.window_width += width + self.items_gap
+
+        self.wheel.x = self.base_wheel
+        self.wheel.y = self.graph_origin_y
+        self.wheel.setup()
+        
+        if self.config.show_wheel:
+            self.window_width += self.config.app_height / 2 + self.items_gap - self.config.padding
+            self.base_wheel_texture = self.base_wheel + self.config.app_height / 2
 
         ac.setSize(self.app_window, self.window_width, self.window_height)
         ac.setBackgroundOpacity(self.app_window, 0)
@@ -161,9 +146,6 @@ class App:
             if self.config.show_brake and not self.ac_graph_traces['brake']:
                 self.ac_graph_traces['brake'] = self.ac_graph.add_trace(self.config.brake_color)
 
-        self.wheel.x = self.base_wheel
-        self.wheel.y = self.graph_origin_y
-        self.wheel.setup()
 
     def on_update(self, dt):
         self.update_ref['timer'] += dt
@@ -181,16 +163,7 @@ class App:
             self.update_ref['timer'] = 0
             self.telemetry.update_telemetry()
 
-            if self.show_bars and self.config.show_bar_value:
-                bars = [
-                    (self.config.show_throttle_bar, self.throttle_label, self.telemetry.throttle),
-                    (self.config.show_brake_bar, self.brake_label, self.telemetry.brake),
-                    (self.config.show_clutch_bar, self.clutch_label, self.telemetry.clutch),
-                ]
-                for enabled, label, value in bars:
-                    if enabled:
-                        rounded = round(value * 100)
-                        ac.setText(label, '00' if rounded == 100 else str(rounded))
+            self.pedals.update()
 
             if self.IS_CSP:
                 values = []
@@ -236,6 +209,8 @@ class App:
                 self.config.save()
 
     def on_render(self, dt):
+        self.pedals.render()
+
         if self.config.show_wheel:
             ac.glColor4f(0, 0, 0, self.config.opacity)
             ac.glQuadTextured(self.base_wheel_texture, 0, self.window_height / 2, self.window_height, self.half_circle_texture)
@@ -260,27 +235,6 @@ class App:
     
         if self.csp_graph:
             self.csp_graph.render()
-
-        if self.show_bars:
-            bar_height = self.config.app_height
-            bar_start_y = self.graph_origin_y
-            if self.config.show_bar_value:
-                bar_height -= self.config.bar_width * 1.1
-                bar_start_y += self.config.bar_width * 1.1
-    
-            bars = [
-                (self.config.show_throttle_bar, self.telemetry.throttle, self.config.throttle_color),
-                (self.config.show_brake_bar, self.telemetry.brake, self.config.brake_color),
-                (self.config.show_clutch_bar, self.telemetry.clutch, self.config.clutch_color),
-            ]
-            
-            for i, (value, color) in enumerate([(value, color) for enabled, value, color in bars if enabled]):
-                x = self.base_bars + i * (self.config.bar_width + 8)
-                ac.glColor4f(0.24, 0.24, 0.24, self.config.opacity)
-                ac.glQuad(x, bar_start_y, self.config.bar_width, bar_height)
-                height = bar_height * value
-                ac.glColor3f(color[0], color[1], color[2])
-                ac.glQuad(x, bar_start_y + bar_height - height, self.config.bar_width, height)
         
         # Window opacity is reset on drag, set to correct value
         if self.settings.open:
