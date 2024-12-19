@@ -10,8 +10,10 @@ Assetto Corsa app that show car telemetry in a graph with many config options. I
   - Throttle
   - Brake
   - Clutch
+  - Handbrake
   - Steering
   - G forces
+  - Force feedback
 - Pedal inputs
 - Wheel
 - Fully customizable
