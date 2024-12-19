@@ -556,6 +556,7 @@ class Pedals:
         if self.config.show_throttle_bar: bars +=1 
         if self.config.show_brake_bar: bars +=1 
         if self.config.show_clutch_bar: bars +=1
+        if self.IS_CSP and self.config.show_handbrake_bar: bars +=1
 
         if bars == 0:
             return 0
@@ -583,6 +584,7 @@ class Pedals:
             (self.config.show_throttle_bar, self.telemetry.throttle, self.config.throttle_color),
             (self.config.show_brake_bar, self.telemetry.brake, self.config.brake_color),
             (self.config.show_clutch_bar, self.telemetry.clutch, self.config.clutch_color),
+            (self.IS_CSP and self.config.show_handbrake_bar, self.telemetry.handbrake, self.config.handbrake_color),
         ]
         for i, (value, color) in enumerate([rest for enabled, *rest in bars if enabled]):
             x = self.x + i * (self.config.bar_width + self.gap_x)
