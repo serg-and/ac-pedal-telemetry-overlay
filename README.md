@@ -18,12 +18,14 @@ Assetto Corsa app that show car telemetry in a graph with many config options. I
 
 ## Installation
 
-Download the zip from Racedepartment. Or manually create a releaes zip install:
-
-- Download the source code
-- run `create_zip.ps1`
+- Download the zip from [Overtake.gg here](https://www.overtake.gg/downloads/ac-pedal-telemetry-overlay.67630/).
 - Copy its content into you your `assettocorsa` folder, or simply drag to zip file into Content Manager if you are using that
 - Enable the app in the menu
+
+Or manually create a release zip from source:
+
+- Download the source code
+- run `create_zip.ps1 telemetry_overlay <<VERSION>>`
 
 ## Settings
 
