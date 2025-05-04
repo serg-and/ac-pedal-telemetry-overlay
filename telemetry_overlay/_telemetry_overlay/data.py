@@ -18,7 +18,7 @@ else:
 sys.path.insert(0, sysdir)
 os.environ['PATH'] = os.environ['PATH'] + ";."
 
-from lib.sim_info import info
+from _telemetry_overlay.lib.sim_info import info
 
 
 class TelemetryData:

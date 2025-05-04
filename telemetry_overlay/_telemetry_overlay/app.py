@@ -1,9 +1,9 @@
 import ac, acsys
 
-from config import Config
-from data import TelemetryData
-from utils import console, load_texture
-from widgets import ACGraph, CSPGraph, Pedals, Wheel
+from _telemetry_overlay.config import Config
+from _telemetry_overlay.data import TelemetryData
+from _telemetry_overlay.utils import console, load_texture
+from _telemetry_overlay.widgets import ACGraph, CSPGraph, Pedals, Wheel
 
 
 class App:
@@ -31,7 +31,7 @@ class App:
         ac.setBackgroundOpacity(self.app_window, 0.0)
         ac.setIconPosition(self.app_window, 0, -10000)
 
-        from settings import SettingsWindow
+        from _telemetry_overlay.settings import SettingsWindow
         self.settings = SettingsWindow(self)
 
         self.toggle_settings_button = ac.addButton(self.app_window, "")

@@ -1,8 +1,8 @@
 import ac, acsys
 
 import math
-from data import TelemetryData
-from utils import console_exception, load_texture
+from _telemetry_overlay.data import TelemetryData
+from _telemetry_overlay.utils import console_exception, load_texture
 
 CHECKBOX_SIZE = 16
 CHECKBOX_LABEL_GAP = 10

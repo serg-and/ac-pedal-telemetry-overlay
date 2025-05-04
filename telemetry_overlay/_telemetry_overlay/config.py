@@ -1,7 +1,7 @@
-import os
 import configparser
 
-from utils import console
+from telemetry_overlay import config_path
+from _telemetry_overlay.utils import console
 
 
 class Config:
@@ -9,8 +9,7 @@ class Config:
 
     def __init__(self):
         self.update_cfg = False
-        app_dir = os.path.dirname(__file__)
-        self.cfg_file_path = os.path.join(app_dir, "config.ini")
+        self.cfg_file_path = config_path
         self.cfg_parser = configparser.ConfigParser(inline_comment_prefixes=";")
         self.set_defaults()
         self.parse_config()

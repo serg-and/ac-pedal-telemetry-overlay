@@ -1,7 +1,11 @@
 import ac
+import os
 
-from app import App
-from utils import console_exception
+dir_root = os.path.dirname(__file__)
+config_path = os.path.join(dir_root, 'config.ini')
+
+from _telemetry_overlay.app import App
+from _telemetry_overlay.utils import console_exception
 
 app_state = None
 

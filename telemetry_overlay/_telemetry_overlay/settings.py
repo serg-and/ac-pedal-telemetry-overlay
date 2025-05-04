@@ -1,7 +1,7 @@
 import ac
 
-import app
-from widgets import Checkbox, ConfirmButton, RGBAInput, Spinner, Tabs
+from _telemetry_overlay import app
+from _telemetry_overlay.widgets import Checkbox, ConfirmButton, RGBAInput, Spinner, Tabs
 
 
 class SettingsWindow:
