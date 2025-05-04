@@ -1,9 +1,9 @@
 import ac, acsys
 
-from config import Config
-from data import TelemetryData
-from utils import console, load_texture
-from widgets import ACGraph, CSPGraph, Pedals, Wheel
+from _telemetry_overlay.config import Config
+from _telemetry_overlay.data import TelemetryData
+from _telemetry_overlay.utils import console, load_texture
+from _telemetry_overlay.widgets import ACGraph, CSPGraph, Pedals, Wheel
 
 
 class App:
@@ -18,6 +18,7 @@ class App:
             'steering': None,
             'gx': None,
             'gz': None,
+            'ffb': None,
         }
 
     def load_main(self):
@@ -30,7 +31,7 @@ class App:
         ac.setBackgroundOpacity(self.app_window, 0.0)
         ac.setIconPosition(self.app_window, 0, -10000)
 
-        from settings import SettingsWindow
+        from _telemetry_overlay.settings import SettingsWindow
         self.settings = SettingsWindow(self)
 
         self.toggle_settings_button = ac.addButton(self.app_window, "")
@@ -133,6 +134,8 @@ class App:
             self.ac_graph.opacity = self.config.opacity
             self.ac_graph.setup()
 
+            if self.config.show_ffb and not self.ac_graph_traces['ffb']:
+                self.ac_graph_traces['ffb'] = self.ac_graph.add_trace(self.config.ffb_color)
             if self.config.show_gz and not self.ac_graph_traces['gz']:
                 self.ac_graph_traces['gz'] = self.ac_graph.add_trace(self.config.gz_color)
             if self.config.show_gx and not self.ac_graph_traces['gx']:
@@ -159,6 +162,7 @@ class App:
             prev_steering_norm = self.telemetry.steering_norm
             prev_gx = self.telemetry.get_gx()
             prev_gz = self.telemetry.get_gz()
+            prev_ffb = self.telemetry.ffb
             prev_handbrake = self.telemetry.handbrake
 
             self.update_ref['timer'] = 0
@@ -168,6 +172,8 @@ class App:
 
             if self.IS_CSP:
                 values = []
+                if self.config.show_ffb:
+                    values.append((prev_ffb, self.telemetry.ffb, self.config.ffb_color))
                 if self.config.show_gz:
                     values.append((prev_gz, self.telemetry.get_gz(), self.config.gz_color))
                 if self.config.show_gx:
@@ -197,6 +203,8 @@ class App:
                     self.ac_graph_traces['gz'].add_value(self.telemetry.get_gz())
                 if self.ac_graph_traces['gx']:
                     self.ac_graph_traces['gx'].add_value(self.telemetry.get_gx())
+                if self.ac_graph_traces['ffb']:
+                    self.ac_graph_traces['ffb'].add_value(self.telemetry.ffb)
         
         # low priorty updates
         # low frequency to reduce load

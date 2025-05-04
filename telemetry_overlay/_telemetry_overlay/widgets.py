@@ -1,8 +1,8 @@
 import ac, acsys
 
 import math
-from data import TelemetryData
-from utils import console_exception, load_texture
+from _telemetry_overlay.data import TelemetryData
+from _telemetry_overlay.utils import console_exception, load_texture
 
 CHECKBOX_SIZE = 16
 CHECKBOX_LABEL_GAP = 10
@@ -557,6 +557,7 @@ class Pedals:
         if self.config.show_brake_bar: bars +=1 
         if self.config.show_clutch_bar: bars +=1
         if self.IS_CSP and self.config.show_handbrake_bar: bars +=1
+        if self.config.show_ffb_bar: bars +=1
 
         if bars == 0:
             return 0
@@ -586,7 +587,8 @@ class Pedals:
             (self.config.show_clutch_bar, self.telemetry.clutch, self.config.clutch_color),
             (self.IS_CSP and self.config.show_handbrake_bar, self.telemetry.handbrake, self.config.handbrake_color),
         ]
-        for i, (value, color) in enumerate([rest for enabled, *rest in bars if enabled]):
+        i = 0
+        for value, color in [rest for enabled, *rest in bars if enabled]:
             x = self.x + i * (self.config.bar_width + self.gap_x)
             
             # bar background
@@ -618,6 +620,22 @@ class Pedals:
                     self.config.bar_width,
                     2
                 )
+            
+            i += 1
+        
+        if self.config.show_ffb_bar:
+            x = self.x + i * (self.config.bar_width + self.gap_x)
+
+            # bar background
+            ac.glColor4f(0.24, 0.24, 0.24, self.config.opacity)
+            ac.glQuad(x, self.pedal_y, self.config.bar_width, self.pedal_height)
+
+            height = self.pedal_height * min(1, self.telemetry.ffb)
+            color = self.config.ffb_color
+            if self.telemetry.ffb >= 1:
+                color = (0.8, 0.0, 0.0, 1.0)
+            ac.glColor3f(color[0], color[1], color[2])
+            ac.glQuad(x, self.pedal_y + self.pedal_height - height, self.config.bar_width, height)
 
 class Wheel:
     def __init__(self, IS_CSP, config, telemetry=TelemetryData, x=0, y=0, size=100, depth=5, angle=20, color=(1, 1, 1, 1)):
