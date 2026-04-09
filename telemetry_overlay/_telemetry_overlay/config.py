@@ -52,6 +52,7 @@ class Config:
         self.wheel_angle=15 # Width of the wheel
         self.throttle_color=(0.16, 1.0, 0.0, 1.0)    # Color of the throttle trace
         self.brake_color=(1.0, 0.16, 0.0, 1.0)   # Color of the brake trace
+        self.brake_abs_color=(1.0, 1.0, 0.0, 1.0)   # Color of the brake trace when ABS is triggered (yellow)
         self.clutch_color=(0.16, 1.0, 1.0, 1.0)  # Color of the clutch trace
         self.steering_color=(0.9, 0.9, 0.9, 1.0)  # Color of the steering trace
         self.handbrake_color=(0.0, 0.16, 1.0, 1.0)   # Color of the handbrake trace

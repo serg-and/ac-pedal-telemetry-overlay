@@ -169,6 +169,8 @@ class App:
             self.telemetry.update_telemetry()
 
             self.pedals.update()
+            brake_color = self.config.brake_abs_color if self.telemetry.abs_active else self.config.brake_color
+            self.telemetry.abs_active = False
 
             if self.IS_CSP:
                 values = []
@@ -192,6 +194,8 @@ class App:
                 self.csp_graph.add_values(values)
             else:
                 if self.ac_graph_traces['brake']:
+                    if self.ac_graph_traces['brake'].color != brake_color:
+                        self.ac_graph_traces['brake'].update_color(brake_color)
                     self.ac_graph_traces['brake'].add_value(self.telemetry.brake)
                 if self.ac_graph_traces['throttle']:
                     self.ac_graph_traces['throttle'].add_value(self.telemetry.throttle)

@@ -31,6 +31,7 @@ class TelemetryData:
     steering = 0
     steering_norm = 0.5
     ffb = 0
+    abs_active = False
     gx_values = []
     gz_values = []
     max_x = 2.8
@@ -56,6 +57,13 @@ class TelemetryData:
         self.brake = ac.getCarState(self.car_id, acsys.CS.Brake)
         self.clutch = 1 - ac.getCarState(self.car_id, acsys.CS.Clutch)
         self.ffb = ac.getCarState(self.car_id, acsys.CS.LastFF)
+        if self.IS_CSP:
+            try:
+                if ac.ext_getStateAbsActive(self.car_id):
+                    self.abs_active = True
+            except:
+                pass
+        
         self.steering = ac.getCarState(self.car_id, acsys.CS.Steer)
         self.steering_norm = min(
             max(
